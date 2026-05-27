@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>城市脉搏 City Pulse</title>
+  <script>(function(){var t=localStorage.getItem('city-pulse-theme');if(t)document.documentElement.setAttribute('data-theme',t);else if(matchMedia('(prefers-color-scheme:dark)').matches)document.documentElement.setAttribute('data-theme','dark');})();</script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html"><span class="brand-mark">&#9671;</span><span>城市脉搏</span></a>
+    <div class="top-right">
+      <span class="top-meta">8 维度 · 3 Persona · 39 城</span>
+      <a class="theme-btn" href="https://wj.qq.com/s2/26866052/a2bc" target="_blank" rel="noopener" aria-label="反馈" title="反馈">&#9993;</a>
+      <button class="theme-btn" id="themeBtn" aria-label="切换主题">
+        <span class="icon-moon">&#9790;</span>
+        <span class="icon-sun">&#9728;</span>
+      </button>
+    </div>
+  </header>
+
+  <section id="assessment" class="assessment-shell">
+    <div class="assessment-card">
+      <div class="assessment-head">
+        <span class="eyebrow">City Pulse · 39 城定居避险指数</span>
+        <h1>五步生成你的城市匹配画像</h1>
+        <p class="lead">选择行业与体制偏好、身份、省份、气质光谱与流动性预期，个性化评分。</p>
+        <div id="stepBar" class="stepbar"></div>
+      </div>
+      <div class="panel-wrap">
+        <!-- Panel 1: Industry -->
+        <div id="panel1" class="panel is-active">
+          <div class="panel-title"><h2>&#127919; 职业方向</h2><span class="hint">体制倾向 + 行业标签</span></div>
+          <div class="system-pref" id="systemPrefGroup"></div>
+          <div class="panel-title" style="margin-top:0;"><h2 style="font-size:18px;">&#127991;&#65039; 选择行业</h2><span class="hint">19个行业，单选</span></div>
+          <div id="industryGrid" class="industry-grid"></div>
+          <div class="panel-actions"><span class="hint" id="industryHint">请选择行业后继续</span><button id="industryNext" class="btn btn-primary" disabled>下一步</button></div>
+        </div>
+        <!-- Panel 2: Persona -->
+        <div id="panel2" class="panel">
+          <div class="panel-title"><h2>&#128100; 你是什么身份</h2><span class="hint">Persona 决定 8 维权重</span></div>
+          <div id="personaGrid" class="persona-grid"></div>
+          <div class="panel-actions"><button class="btn btn-secondary" data-back="1">上一步</button><button id="personaNext" class="btn btn-primary" disabled>下一步</button></div>
+        </div>
+        <!-- Panel 3: Province -->
+        <div id="panel3" class="panel">
+          <div class="panel-title"><h2>&#127757; 你的家乡或意向省份</h2><span class="hint">用于流动性匹配，锚定你的地理偏好</span></div>
+          <div id="provinceGrid" class="province-grid"></div>
+          <div id="provinceHint" class="province-hint"></div>
+          <div class="panel-actions"><button class="btn btn-secondary" data-back="2">上一步</button><button id="provinceNext" class="btn btn-primary" disabled>下一步</button></div>
+        </div>
+        <!-- Panel 4: Questions -->
+        <div id="panel4" class="panel">
+          <div class="panel-title"><h2>&#129516; 气质测试</h2><span class="hint">6 个维度，影响权重微调</span></div>
+          <div id="questionHost"></div>
+          <div class="panel-actions"><button class="btn btn-secondary" id="questionBack">上一步</button><button id="questionNext" class="btn btn-primary" disabled>下一题</button></div>
+        </div>
+        <!-- Panel 5: Mobility -->
+        <div id="panel5" class="panel">
+          <div class="panel-title"><h2>&#128256; 流动性预期</h2><span class="hint">你愿意离开家乡多远</span></div>
+          <div id="mobilityGrid" class="mobility-grid"></div>
+          <div class="panel-actions"><button class="btn btn-secondary" data-back="4">上一步</button><button id="matchBtn" class="btn btn-primary hidden">开始匹配</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="results" class="results-shell hidden">
+    <div class="mobile-summary">
+      <div id="mobileTags" class="mobile-tags"></div>
+      <button class="small-btn" id="mobileModify">修改</button>
+    </div>
+    <div id="resultsGrid" class="results-grid">
+      <aside class="sidebar">
+        <div class="sidebar-title">39 城排序</div>
+        <div class="toggle" role="tablist">
+          <button id="sortMatch" class="is-active" type="button">匹配度</button>
+          <button id="sortGdp" type="button">GDP</button>
+        </div>
+        <div id="rankList" class="rank-list"></div>
+        <button id="modifyBtn" class="btn btn-secondary">修改条件</button>
+      </aside>
+      <main class="main">
+        <div class="main-head">
+          <div>
+            <h2>你的城市匹配结果</h2>
+            <p class="lead" id="resultLead">请先完成测评</p>
+            <div id="summaryChips" class="chips"></div>
+            <div class="score-guide">分数反映该城市在 39 城中的相对位置：80+ 表现突出，60+ 中上，40 以下需关注短板</div>
+          </div>
+          <div class="radar-box"><div id="radarChart"></div></div>
+        </div>
+        <div id="cityCards" class="city-cards"></div>
+      </main>
+      <section id="detailPanel" class="detail-panel" aria-hidden="true">
+        <div id="detailInner" class="detail-inner"></div>
+      </section>
+    </div>
+  </section>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="../city-pulse-data.js"></script>
+  <script src="constants.js"></script>
+  <script src="config.js"></script>
+  <script src="data.js"></script>
+  <script src="scoring.js"></script>
+  <script src="radar.js"></script>
+  <script src="render.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,4062 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>城市脉搏 City Pulse (bundled)</title>
+  <script>(function(){var t=localStorage.getItem('city-pulse-theme');if(t)document.documentElement.setAttribute('data-theme',t);else if(matchMedia('(prefers-color-scheme:dark)').matches)document.documentElement.setAttribute('data-theme','dark');})();</script>
+  <style>
+/* City Pulse — Airbnb-inspired Design System */
+* { box-sizing: border-box; }
+*:focus { outline: none; }
+*:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+:root {
+  --primary: #ff385c; --primary-active: #e00b41; --primary-disabled: #ffd1da; --primary-error: #c13515;
+  --canvas: #ffffff; --surface: #f7f7f7; --surface-strong: #f2f2f2; --ink: #222222; --body: #3f3f3f;
+  --muted: #6a6a6a; --muted-soft: #929292; --line: #dddddd; --line-soft: #ebebeb;
+  --green: #00a699; --yellow: #f0a500; --orange: #ff8c42; --blue: #428bff;
+  --shadow: rgba(0,0,0,0.02) 0 0 0 1px, rgba(0,0,0,0.04) 0 2px 6px, rgba(0,0,0,0.10) 0 4px 8px;
+  --font: 'Airbnb Cereal VF', Circular, -apple-system, system-ui, Roboto, 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --r-xs: 4px; --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-xl: 32px; --r-full: 9999px;
+  color-scheme: light dark;
+}
+html, body { margin: 0; min-height: 100%; background: var(--canvas); color: var(--ink); font-family: var(--font); letter-spacing: 0; }
+body { font-size: 14px; line-height: 1.43; }
+
+/* Dark mode */
+[data-theme="dark"] {
+  --canvas: #1a1a1a; --surface: #2a2a2a; --surface-strong: #333333;
+  --ink: #f0f0f0; --body: #d0d0d0; --muted: #999999; --muted-soft: #666666;
+  --line: #3a3a3a; --line-soft: #2a2a2a;
+  --primary-disabled: #4a1525; --shadow: rgba(0,0,0,0.12) 0 0 0 1px, rgba(0,0,0,0.20) 0 2px 6px, rgba(0,0,0,0.30) 0 4px 8px;
+}
+[data-theme="dark"] .tag-good { background: rgba(0,166,153,0.18); }
+[data-theme="dark"] .tag-weak { background: rgba(255,56,92,0.15); }
+[data-theme="dark"] .pref-option.is-selected,
+[data-theme="dark"] .choice-card.is-selected,
+[data-theme="dark"] .prov-btn.is-selected,
+[data-theme="dark"] .answer-card.is-selected { background: rgba(255,56,92,0.12); }
+[data-theme="dark"] .step-item.is-active { background: rgba(255,56,92,0.14); }
+[data-theme="dark"] .step-item.is-done { background: rgba(255,56,92,0.08); }
+[data-theme="dark"] .chip.primary { background: rgba(255,56,92,0.16); }
+[data-theme="dark"] .chip.warn { background: rgba(240,165,0,0.15); color: #f0a500; }
+[data-theme="dark"] .chip.bad { background: rgba(193,53,21,0.15); }
+[data-theme="dark"] .rank-row.is-active { background: rgba(255,56,92,0.10); }
+[data-theme="dark"] .city-card-row.is-active { background: rgba(255,56,92,0.08); }
+[data-theme="dark"] .btn-secondary { background: var(--surface); border-color: var(--line); }
+[data-theme="dark"] .btn-secondary:hover { background: var(--surface-strong); border-color: var(--muted); }
+[data-theme="dark"] .main-head { background: var(--canvas); }
+button, input { font: inherit; }
+button { border: 0; cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+.hidden { display: none !important; }
+
+/* Topbar */
+.topbar { height: 72px; border-bottom: 1px solid var(--line-soft); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; background: var(--canvas); position: sticky; top: 0; z-index: 30; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 20px; color: var(--primary); text-decoration: none; }
+.brand-mark { width: 34px; height: 34px; border-radius: var(--r-full); display: grid; place-items: center; background: var(--primary); color: #fff; font-size: 18px; }
+.top-right { display: flex; align-items: center; gap: 12px; }
+.top-meta { color: var(--muted); font-size: 13px; }
+.theme-btn { width: 36px; height: 36px; border-radius: var(--r-full); background: var(--surface); color: var(--muted); font-size: 18px; display: grid; place-items: center; border: 0; cursor: pointer; text-decoration: none; transition: background 200ms, color 200ms; }
+.theme-btn:hover { background: var(--surface-strong); color: var(--ink); }
+.theme-btn .icon-sun { display: block; }
+.theme-btn .icon-moon { display: none; }
+[data-theme="dark"] .theme-btn .icon-sun { display: none; }
+[data-theme="dark"] .theme-btn .icon-moon { display: block; }
+
+/* Assessment */
+.assessment-shell { min-height: calc(100vh - 72px); display: grid; place-items: start center; padding: 48px 24px 64px; background: var(--canvas); }
+.assessment-card { width: min(900px, 100%); border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--canvas); box-shadow: var(--shadow); overflow: hidden; }
+.assessment-head { padding: 28px 32px 20px; border-bottom: 1px solid var(--line-soft); }
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; min-height: 30px; padding: 5px 12px; border-radius: var(--r-full); background: var(--surface); color: var(--muted); font-size: 13px; font-weight: 600; }
+h1, h2, h3, p { margin: 0; }
+h1 { margin-top: 16px; font-size: 28px; line-height: 1.2; font-weight: 700; }
+.lead { margin-top: 8px; color: var(--muted); font-size: 15px; }
+
+/* Step bar */
+.stepbar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 24px; }
+.step-item { min-width: 0; border: 1px solid var(--line-soft); background: var(--surface); border-radius: var(--r-full); padding: 8px 10px; color: var(--muted); display: flex; align-items: center; gap: 8px; justify-content: center; font-weight: 600; transition: background 150ms ease-out, color 150ms ease-out, border-color 150ms ease-out; }
+.step-num { width: 22px; height: 22px; border-radius: var(--r-full); display: grid; place-items: center; background: var(--canvas); color: var(--muted); font-size: 12px; }
+.step-item.is-active { background: rgba(255,56,92,0.08); color: var(--ink); border-color: rgba(255,56,92,0.36); }
+.step-item.is-active .step-num, .step-item.is-done .step-num { background: var(--primary); color: #fff; }
+.step-item.is-done { color: var(--primary); border-color: rgba(255,56,92,0.28); background: var(--canvas); }
+
+/* Panels */
+.panel-wrap { padding: 32px; }
+.panel { display: none; animation: stepIn 150ms ease-out both; }
+.panel.is-active { display: block; }
+@keyframes stepIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.panel-title { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.panel-title h2 { font-size: 22px; line-height: 1.2; font-weight: 650; }
+.hint { color: var(--muted); font-size: 14px; }
+
+/* System pref */
+.system-pref { display: flex; align-items: stretch; gap: 10px; margin-bottom: 20px; }
+.pref-option { flex: 1; min-width: 110px; min-height: 64px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--canvas); color: var(--ink); padding: 12px 14px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; font-size: 14px; text-align: left; cursor: pointer; transition: border-color 200ms, background 200ms; }
+.pref-option:hover { border-color: var(--ink); }
+.pref-option.is-selected { border-color: var(--primary); background: rgba(255,56,92,0.06); }
+.pref-option .pref-label { font-weight: 650; }
+.pref-option .pref-desc { color: var(--muted); font-size: 12px; line-height: 1.35; }
+
+/* Grids */
+.industry-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.persona-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.mobility-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+
+/* Province selector */
+.province-grid { display: grid; gap: 18px; }
+.prov-region-label { font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.prov-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.prov-btn { height: 40px; padding: 0 14px; border: 1px solid var(--line); border-radius: var(--r-full); background: var(--canvas); color: var(--ink); font-size: 14px; font-weight: 600; transition: border-color 200ms, background 200ms, transform 200ms; }
+.prov-btn:hover { border-color: var(--ink); transform: translateY(-1px); }
+.prov-btn.is-selected { border-color: var(--primary); background: rgba(255,56,92,0.06); color: var(--primary); }
+.province-hint { min-height: 20px; margin-top: 8px; }
+.prov-hint-text { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+/* Choice cards */
+.choice-card { text-align: left; min-height: 84px; padding: 16px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--canvas); color: var(--ink); transition: transform 200ms ease-out, box-shadow 200ms ease-out, border-color 200ms ease-out, background 200ms ease-out; }
+.choice-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.choice-card.is-selected { border-color: var(--primary); background: rgba(255,56,92,0.06); box-shadow: rgba(255,56,92,0.12) 0 0 0 3px; }
+.choice-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 650; font-size: 15px; }
+.choice-meta { margin-top: 8px; color: var(--muted); font-size: 13px; line-height: 1.35; }
+.persona-card { min-height: 164px; display: flex; flex-direction: column; gap: 10px; }
+.persona-icon { width: 42px; height: 42px; border-radius: var(--r-full); display: grid; place-items: center; background: var(--surface); font-size: 22px; }
+
+/* Questions */
+.question-card { border: 1px solid var(--line); border-radius: var(--r-md); padding: 22px; background: var(--canvas); }
+.question-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.question-progress { color: var(--muted); font-weight: 650; }
+.progress-track { height: 8px; border-radius: var(--r-full); background: var(--surface-strong); overflow: hidden; margin-bottom: 20px; }
+.progress-fill { height: 100%; width: 12.5%; border-radius: var(--r-full); background: var(--primary); transition: width 300ms ease-out; }
+.question-text { font-size: 20px; line-height: 1.35; font-weight: 650; margin-bottom: 14px; }
+.answer-list { display: grid; gap: 10px; }
+.answer-card { width: 100%; min-height: 58px; display: flex; align-items: center; gap: 12px; text-align: left; border: 1px solid var(--line); background: var(--canvas); color: var(--ink); border-radius: var(--r-sm); padding: 12px 14px; transition: transform 200ms ease-out, border-color 200ms ease-out, background 200ms ease-out; }
+.answer-card:hover { transform: translateY(-2px); border-color: var(--ink); }
+.answer-card.is-selected { border-color: var(--primary); background: rgba(255,56,92,0.06); }
+.answer-key { width: 28px; height: 28px; border-radius: var(--r-full); display: grid; place-items: center; background: var(--surface); color: var(--muted); font-weight: 700; }
+.answer-card.is-selected .answer-key { background: var(--primary); color: #fff; }
+
+/* Buttons */
+.panel-actions { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 24px; }
+.btn { height: 48px; border-radius: var(--r-sm); padding: 0 24px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 650; transition: background 200ms ease-out, transform 200ms ease-out, border-color 200ms ease-out; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-active); }
+.btn-primary:disabled { background: var(--primary-disabled); color: #fff; }
+.btn-secondary { background: var(--canvas); color: var(--ink); border: 1px solid var(--line); }
+.btn-secondary:hover { background: var(--surface); border-color: var(--ink); }
+
+/* Results */
+.results-shell { min-height: calc(100vh - 72px); background: var(--canvas); }
+.mobile-summary { display: none; position: sticky; top: 72px; z-index: 20; background: var(--canvas); border-bottom: 1px solid var(--line-soft); padding: 12px 16px; align-items: center; justify-content: space-between; gap: 12px; }
+.mobile-tags { min-width: 0; display: flex; align-items: center; gap: 8px; overflow: hidden; }
+.results-grid { display: grid; grid-template-columns: 200px minmax(0, 1fr) 0; min-height: calc(100vh - 72px); transition: grid-template-columns 300ms ease-in; }
+.results-grid.detail-open { grid-template-columns: 200px minmax(0, 1fr) 400px; transition-timing-function: ease-out; }
+
+/* Sidebar */
+.sidebar { border-right: 1px solid var(--line-soft); padding: 20px 14px; min-width: 0; position: sticky; top: 72px; height: calc(100vh - 72px); display: flex; flex-direction: column; gap: 14px; background: var(--canvas); }
+.sidebar-title { font-size: 15px; font-weight: 700; padding: 0 4px; }
+.toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; border-radius: var(--r-full); background: var(--surface); padding: 4px; }
+.toggle button { height: 36px; border-radius: var(--r-full); background: transparent; color: var(--muted); font-size: 13px; font-weight: 650; }
+.toggle button.is-active { background: var(--canvas); color: var(--ink); box-shadow: rgba(0,0,0,0.08) 0 1px 4px; }
+.rank-list { overflow: auto; display: grid; gap: 6px; padding: 2px 0 8px; flex: 1; }
+.rank-row { width: 100%; min-height: 48px; border: 1px solid transparent; border-radius: var(--r-sm); background: var(--canvas); display: grid; grid-template-columns: 16px 1fr auto; align-items: center; gap: 8px; padding: 8px; color: var(--ink); transition: transform 500ms ease-out, background 200ms ease-out, border-color 200ms ease-out; }
+.rank-row:hover { background: var(--surface); }
+.rank-row.is-active { border-color: var(--primary); background: rgba(255,56,92,0.06); }
+.level-dot { width: 10px; height: 10px; border-radius: var(--r-xs); display: inline-block; }
+.level-一线 { background: var(--primary); }
+.level-新一线 { background: var(--orange); }
+.level-二线 { background: var(--muted); }
+.rank-city { min-width: 0; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.score { font-weight: 700; font-variant-numeric: tabular-nums; }
+.score.good { color: var(--green); }
+.score.mid { color: var(--yellow); }
+.score.low { color: var(--primary); }
+
+/* Main area */
+.main { min-width: 0; padding: 28px 32px 0; display: flex; flex-direction: column; height: calc(100vh - 72px); overflow: hidden; }
+.main-head { display: grid; grid-template-columns: minmax(0, 1fr) 380px; align-items: center; gap: 24px; border-bottom: 1px solid var(--line-soft); padding-bottom: 20px; flex-shrink: 0; }
+.main h2 { font-size: 28px; line-height: 1.2; font-weight: 700; margin-bottom: 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.score-guide { margin-top: 10px; font-size: 12px; color: var(--muted-soft); line-height: 1.5; }
+.chip { min-height: 30px; display: inline-flex; align-items: center; gap: 6px; border-radius: var(--r-full); padding: 5px 10px; background: var(--surface); color: var(--body); font-size: 13px; font-weight: 600; }
+.chip.primary { background: rgba(255,56,92,0.08); color: var(--primary); }
+.chip.warn { background: #fff8e6; color: #986700; }
+.chip.bad { background: #fff0ec; color: var(--primary-error); }
+.radar-box { display: grid; place-items: center; justify-self: end; width: 370px; }
+#radarChart { width: 360px; height: 300px; }
+
+/* City cards */
+.city-cards { display: grid; gap: 10px; padding: 20px 0 48px; overflow-y: auto; flex: 1; min-height: 0; }
+.city-card-row { border: 1px solid var(--line); border-radius: var(--r-md); background: var(--canvas); padding: 14px 16px; display: grid; grid-template-columns: 42px minmax(0, 1fr) 70px 80px 172px; align-items: center; gap: 14px; transition: transform 500ms ease-out, box-shadow 200ms ease-out, border-color 200ms ease-out, background 200ms ease-out; }
+.city-card-row:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.city-card-row.is-active { border-color: var(--primary); background: rgba(255,56,92,0.04); }
+.rank-no { width: 34px; height: 34px; display: grid; place-items: center; border-radius: var(--r-full); background: var(--surface); color: var(--muted); font-weight: 700; }
+.city-main-name { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.city-sub { color: var(--muted); margin-top: 4px; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.tag-good, .tag-weak { display: inline-flex; align-items: center; border-radius: var(--r-full); padding: 1px 7px; font-size: 11px; font-weight: 600; }
+.tag-good { background: rgba(0,166,153,0.10); color: var(--green); }
+.tag-weak { background: rgba(255,56,92,0.08); color: var(--primary); }
+.mini-dims { display: flex; gap: 3px; align-items: end; height: 32px; }
+.mini-bar { width: 6px; border-radius: var(--r-full); background: rgba(255,56,92,0.25); min-height: 5px; }
+.row-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.small-btn { height: 36px; border-radius: var(--r-full); padding: 0 13px; background: var(--surface); color: var(--ink); font-weight: 650; font-size: 13px; }
+.small-btn:hover { background: var(--surface-strong); }
+.small-btn.is-selected { background: var(--primary); color: #fff; }
+
+/* Detail panel */
+.detail-panel { overflow: hidden; opacity: 0; border-left: 1px solid transparent; background: var(--canvas); transition: opacity 200ms ease-out, border-color 200ms ease-out; }
+.results-grid.detail-open .detail-panel { opacity: 1; border-left-color: var(--line-soft); }
+.detail-inner { width: 400px; height: calc(100vh - 72px); position: sticky; top: 72px; overflow: auto; padding: 22px; }
+.detail-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 20px; }
+.detail-title { font-size: 24px; font-weight: 750; line-height: 1.2; }
+.detail-score { margin-top: 8px; font-size: 34px; line-height: 1; font-weight: 750; }
+.close-btn { width: 36px; height: 36px; border-radius: var(--r-full); background: var(--surface); color: var(--ink); font-size: 22px; line-height: 1; }
+.detail-section { border-top: 1px solid var(--line-soft); padding-top: 18px; margin-top: 18px; }
+.detail-section h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+.dim-row { display: grid; grid-template-columns: 90px minmax(0, 1fr) 40px; align-items: center; gap: 10px; margin-bottom: 10px; }
+.dim-fill.green { background: var(--green); }
+.dim-fill.yellow { background: var(--yellow); }
+.dim-fill.red { background: var(--primary); }
+.dim-label { color: var(--body); font-weight: 600; font-size: 13px; }
+.dim-track { height: 9px; background: var(--surface-strong); border-radius: var(--r-full); overflow: hidden; }
+.dim-fill { display: inline-block; height: 100%; border-radius: var(--r-full); background: var(--primary); }
+.dim-interp { display: flex; align-items: center; gap: 5px; margin: -4px 0 8px 100px; font-size: 12px; color: var(--muted); line-height: 1.4; }
+.dim-interp-icon { font-size: 10px; flex-shrink: 0; }
+.dim-interp-icon.good { color: var(--green); }
+.dim-interp-icon.mid { color: var(--yellow); }
+.dim-interp-icon.low { color: var(--primary); }
+.field-list { display: grid; gap: 10px; }
+.field-item { border: 1px solid var(--line-soft); border-radius: var(--r-sm); padding: 12px; }
+.field-top { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: baseline; }
+.field-name { font-weight: 700; color: var(--ink); font-size: 13px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.field-value { font-weight: 750; font-variant-numeric: tabular-nums; text-align: right; font-size: 15px; white-space: nowrap; }
+.field-value.empty { color: var(--muted-soft); font-weight: 600; }
+.field-value .yr { margin-left: 6px; font-weight: 600; font-size: 12px; color: var(--muted-soft); }
+.field-desc { margin-top: 4px; color: var(--muted); font-size: 12px; }
+
+/* Toast */
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(16px); min-width: min(420px, calc(100vw - 32px)); max-width: calc(100vw - 32px); padding: 13px 16px; border-radius: var(--r-md); background: var(--ink); color: #fff; box-shadow: var(--shadow); opacity: 0; pointer-events: none; z-index: 80; transition: opacity 200ms ease-out, transform 200ms ease-out; text-align: center; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Responsive */
+@media (max-width: 960px) {
+  .main-head { grid-template-columns: 1fr; }
+  .radar-box { justify-self: start; width: auto; }
+  .city-card-row { grid-template-columns: 38px minmax(0, 1fr) 80px; }
+  .mini-dims { display: none; }
+  .row-actions { grid-column: 2 / 4; justify-content: flex-start; }
+  .industry-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .persona-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 744px) {
+  .topbar { height: 60px; padding: 0 16px; }
+  .top-meta { display: none; }
+  .brand { font-size: 18px; }
+  .assessment-shell { min-height: calc(100vh - 60px); padding: 16px; }
+  .assessment-card { border-radius: var(--r-md); box-shadow: none; }
+  .assessment-head, .panel-wrap { padding: 20px 16px; }
+  h1 { font-size: 24px; }
+  .stepbar { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .step-item { padding: 7px 4px; font-size: 0; }
+  .step-num { font-size: 12px; }
+  .industry-grid, .persona-grid, .mobility-grid { grid-template-columns: 1fr; }
+  .panel-actions { flex-direction: column-reverse; align-items: stretch; }
+  .btn { width: 100%; }
+  .results-shell { min-height: auto; }
+  .mobile-summary { display: flex; flex-shrink: 0; position: static; }
+  .results-grid, .results-grid.detail-open { display: flex; flex-direction: column; min-height: auto; height: calc(100vh - 60px); }
+  .sidebar { display: none; }
+  .main { padding: 0 16px; flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+  .main-head { flex-shrink: 0; grid-template-columns: 1fr; padding-bottom: 16px; }
+  .main h2 { font-size: 22px; }
+  .main .chips { display: none; }
+  .radar-box { width: 100%; position: static; justify-self: center; }
+  #radarChart { width: 280px; height: 240px; }
+  .city-cards { flex: 1; min-height: 0; overflow-y: auto; padding: 20px 0 48px; }
+  .city-card-row { grid-template-columns: 34px minmax(0, 1fr) 72px; padding: 12px; gap: 10px; }
+  .row-actions { grid-column: 1 / 4; justify-content: stretch; }
+  .row-actions .small-btn { flex: 1; }
+  .detail-panel { position: fixed; inset: auto 0 0 0; z-index: 60; height: 100vh; background: var(--canvas); opacity: 1; border-left: 0; transform: translateY(100%); transition: transform 300ms ease-in; box-shadow: rgba(0,0,0,0.18) 0 -12px 28px; }
+  .results-grid.detail-open .detail-panel { transform: translateY(0); transition-timing-function: ease-out; }
+  .detail-inner { width: 100%; height: 100vh; position: static; padding: 20px 16px 36px; }
+}
+
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html"><span class="brand-mark">&#9671;</span><span>城市脉搏</span></a>
+    <div class="top-right">
+      <span class="top-meta">8 维度 · 3 Persona · 39 城</span>
+      <a class="theme-btn" href="https://wj.qq.com/s2/26866052/a2bc" target="_blank" rel="noopener" aria-label="反馈" title="反馈">&#9993;</a>
+      <button class="theme-btn" id="themeBtn" aria-label="切换主题">
+        <span class="icon-moon">&#9790;</span>
+        <span class="icon-sun">&#9728;</span>
+      </button>
+    </div>
+  </header>
+
+  <section id="assessment" class="assessment-shell">
+    <div class="assessment-card">
+      <div class="assessment-head">
+        <span class="eyebrow">City Pulse · 39 城定居避险指数</span>
+        <h1>五步生成你的城市匹配画像</h1>
+        <p class="lead">选择行业与体制偏好、身份、省份、气质光谱与流动性预期，个性化评分。</p>
+        <div id="stepBar" class="stepbar"></div>
+      </div>
+      <div class="panel-wrap">
+        <!-- Panel 1: Industry -->
+        <div id="panel1" class="panel is-active">
+          <div class="panel-title"><h2>&#127919; 职业方向</h2><span class="hint">体制倾向 + 行业标签</span></div>
+          <div class="system-pref" id="systemPrefGroup"></div>
+          <div class="panel-title" style="margin-top:0;"><h2 style="font-size:18px;">&#127991;&#65039; 选择行业</h2><span class="hint">19个行业，单选</span></div>
+          <div id="industryGrid" class="industry-grid"></div>
+          <div class="panel-actions"><span class="hint" id="industryHint">请选择行业后继续</span><button id="industryNext" class="btn btn-primary" disabled>下一步</button></div>
+        </div>
+        <!-- Panel 2: Persona -->
+        <div id="panel2" class="panel">
+          <div class="panel-title"><h2>&#128100; 你是什么身份</h2><span class="hint">Persona 决定 8 维权重</span></div>
+          <div id="personaGrid" class="persona-grid"></div>
+          <div class="panel-actions"><button class="btn btn-secondary" data-back="1">上一步</button><button id="personaNext" class="btn btn-primary" disabled>下一步</button></div>
+        </div>
+        <!-- Panel 3: Province -->
+        <div id="panel3" class="panel">
+          <div class="panel-title"><h2>&#127757; 你的家乡或意向省份</h2><span class="hint">用于流动性匹配，锚定你的地理偏好</span></div>
+          <div id="provinceGrid" class="province-grid"></div>
+          <div id="provinceHint" class="province-hint"></div>
+          <div class="panel-actions"><button class="btn btn-secondary" data-back="2">上一步</button><button id="provinceNext" class="btn btn-primary" disabled>下一步</button></div>
+        </div>
+        <!-- Panel 4: Questions -->
+        <div id="panel4" class="panel">
+          <div class="panel-title"><h2>&#129516; 气质测试</h2><span class="hint">6 个维度，影响权重微调</span></div>
+          <div id="questionHost"></div>
+          <div class="panel-actions"><button class="btn btn-secondary" id="questionBack">上一步</button><button id="questionNext" class="btn btn-primary" disabled>下一题</button></div>
+        </div>
+        <!-- Panel 5: Mobility -->
+        <div id="panel5" class="panel">
+          <div class="panel-title"><h2>&#128256; 流动性预期</h2><span class="hint">你愿意离开家乡多远</span></div>
+          <div id="mobilityGrid" class="mobility-grid"></div>
+          <div class="panel-actions"><button class="btn btn-secondary" data-back="4">上一步</button><button id="matchBtn" class="btn btn-primary hidden">开始匹配</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="results" class="results-shell hidden">
+    <div class="mobile-summary">
+      <div id="mobileTags" class="mobile-tags"></div>
+      <button class="small-btn" id="mobileModify">修改</button>
+    </div>
+    <div id="resultsGrid" class="results-grid">
+      <aside class="sidebar">
+        <div class="sidebar-title">39 城排序</div>
+        <div class="toggle" role="tablist">
+          <button id="sortMatch" class="is-active" type="button">匹配度</button>
+          <button id="sortGdp" type="button">GDP</button>
+        </div>
+        <div id="rankList" class="rank-list"></div>
+        <button id="modifyBtn" class="btn btn-secondary">修改条件</button>
+      </aside>
+      <main class="main">
+        <div class="main-head">
+          <div>
+            <h2>你的城市匹配结果</h2>
+            <p class="lead" id="resultLead">请先完成测评</p>
+            <div id="summaryChips" class="chips"></div>
+            <div class="score-guide">分数反映该城市在 39 城中的相对位置：80+ 表现突出，60+ 中上，40 以下需关注短板</div>
+          </div>
+          <div class="radar-box"><div id="radarChart"></div></div>
+        </div>
+        <div id="cityCards" class="city-cards"></div>
+      </main>
+      <section id="detailPanel" class="detail-panel" aria-hidden="true">
+        <div id="detailInner" class="detail-inner"></div>
+      </section>
+    </div>
+  </section>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+// City Pulse v4 Data — auto-generated from 39城市数据合并总表.xlsx
+// Generated: 2026-05-27 | Cities: 39 | Fields: 51 | DO NOT EDIT
+window.CITY_DATA_HEADER = {"fields": ["人均可支配收入", "GDP", "人均GDP", "GDP增长率", "高新技术企业数量", "科技型中小企业数量", "高新企业净迁入", "高新企业迁入数量", "高新企业迁出数量", "地方一般公共预算收入", "地方一般公共预算支出", "社会消费品零售总额", "非私营单位平均工资", "房价收入比", "新房均价", "二手房均价", "房租", "租售比", "咖啡馆数量", "电影院数量", "运动场馆数量", "酒吧数量", "购物中心数量", "购物中心总面积", "超市便利店数量", "餐饮门店数量", "三甲医院数量", "每千人医疗卫生机构床位数", "复旦百强加权分", "双一流高校数量", "高校在校生", "普通中学数量", "普通小学数量", "中学生师比", "小学生师比", "中职学校数", "年均PM2.5", "人均公园绿地面积", "建成区绿化覆盖率", "极端高温天数", "极端低温天数", "通勤时耗", "通勤距离", "轨交里程", "机场数量", "高铁可直达城市数", "建成区路网密度", "常住人口", "财政自给率", "人均预算支出", "城市行政层级"], "units": ["元", "亿元", "元", "%", "家", "家", "家", "家", "家", "万元", "万元", "万元", "元", "倍", "元/㎡", "元/㎡", "元/㎡/月", "", "家", "家", "家", "家", "个", "万㎡", "家", "家", "家", "张", "分", "所", "万人", "所", "所", "", "", "所", "μg/m³", "㎡", "%", "天", "天", "分钟", "km", "km", "个", "个", "km/km²", "万人", "%", "元/人", "分"], "years": [2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024, 2024]};
+window.CITY_DATA = [
+  {
+    "name": "上海",
+    "level": "一线",
+    "v": [
+      88366.0,
+      56708.71,
+      190300.0,
+      5.4,
+      24571.0,
+      17208.0,
+      172.0,
+      194.0,
+      22.0,
+      83125008.0,
+      96385136.0,
+      185155008.0,
+      null,
+      28.1,
+      63528.0,
+      60404.0,
+      91.0,
+      55.3,
+      8731.0,
+      367.0,
+      9820.0,
+      2810.0,
+      450.0,
+      3601.58,
+      22561.0,
+      189941.0,
+      69.0,
+      7.82,
+      null,
+      15.0,
+      57.2,
+      888.0,
+      671.0,
+      10.68,
+      14.07,
+      null,
+      27.0,
+      9.6799891946812,
+      38.2594524959742,
+      26.0,
+      0.0,
+      39.0,
+      9.8,
+      905.8,
+      2.0,
+      205.0,
+      4.77053140096618,
+      2480.26,
+      86.24,
+      38860.9,
+      100
+    ]
+  },
+  {
+    "name": "东莞",
+    "level": "新一线",
+    "v": [
+      68308.0,
+      12760.2,
+      109339.0,
+      4.0,
+      9744.0,
+      4239.0,
+      -1.0,
+      2.0,
+      3.0,
+      8050888.0,
+      9058541.0,
+      44081164.0,
+      null,
+      11.7,
+      21165.0,
+      16972.0,
+      27.0,
+      52.4,
+      3161.0,
+      141.0,
+      3606.0,
+      1467.0,
+      93.0,
+      685.35,
+      32933.0,
+      126751.0,
+      7.0,
+      3.5,
+      null,
+      0.0,
+      11.9,
+      267.0,
+      341.0,
+      13.97,
+      18.61,
+      null,
+      19.0,
+      19.8503142494731,
+      49.1012299989115,
+      31.0,
+      0.0,
+      32.0,
+      8.7,
+      95.27,
+      null,
+      147.0,
+      1.83047115070627,
+      1057.08,
+      88.88,
+      8569.4,
+      50
+    ]
+  },
+  {
+    "name": "佛山",
+    "level": "新一线",
+    "v": [
+      68862.0,
+      13157.35,
+      138526.0,
+      0.2,
+      9377.0,
+      4014.0,
+      -1.0,
+      2.0,
+      3.0,
+      8004626.0,
+      9827303.0,
+      37344764.0,
+      null,
+      7.7,
+      15496.0,
+      12126.0,
+      26.0,
+      38.9,
+      3315.0,
+      145.0,
+      2937.0,
+      944.0,
+      142.0,
+      1185.63,
+      19762.0,
+      100681.0,
+      12.0,
+      4.65,
+      null,
+      1.0,
+      9.2,
+      235.0,
+      423.0,
+      13.16,
+      18.27,
+      null,
+      23.0,
+      17.9010442361454,
+      45.4821902137174,
+      30.0,
+      0.0,
+      32.0,
+      7.8,
+      95.84,
+      1.0,
+      63.0,
+      8.74660704071551,
+      969.89,
+      81.45,
+      10132.39,
+      50
+    ]
+  },
+  {
+    "name": "兰州",
+    "level": "二线",
+    "v": [
+      46318.0,
+      3903.6,
+      78894.0,
+      5.5,
+      1015.0,
+      1330.0,
+      -2.0,
+      1.0,
+      3.0,
+      2553279.0,
+      5029172.0,
+      17963314.0,
+      null,
+      8.0,
+      8459.0,
+      8961.0,
+      26.0,
+      28.7,
+      403.0,
+      60.0,
+      800.0,
+      1074.0,
+      33.0,
+      319.4,
+      6048.0,
+      31573.0,
+      15.0,
+      8.34,
+      null,
+      1.0,
+      45.0,
+      215.0,
+      421.0,
+      11.07,
+      17.07,
+      null,
+      34.88,
+      12.2530005608525,
+      30.4982626469085,
+      22.0,
+      0.0,
+      31.0,
+      7.7,
+      35.03,
+      1.0,
+      115.0,
+      6.01119059785386,
+      443.65,
+      50.77,
+      11335.9,
+      70
+    ]
+  },
+  {
+    "name": "北京",
+    "level": "一线",
+    "v": [
+      85415.0,
+      52073.4,
+      200278.0,
+      5.4,
+      21563.0,
+      9691.0,
+      -14.0,
+      39.0,
+      53.0,
+      61810968.0,
+      79716336.0,
+      144626608.0,
+      null,
+      20.7,
+      54993.0,
+      45354.0,
+      97.0,
+      39.0,
+      5437.0,
+      287.0,
+      8802.0,
+      2179.0,
+      258.0,
+      2169.21,
+      19034.0,
+      155125.0,
+      78.0,
+      6.46,
+      null,
+      33.0,
+      61.8,
+      684.0,
+      719.0,
+      8.75,
+      14.08,
+      null,
+      27.0,
+      17.09,
+      49.84,
+      20.0,
+      0.0,
+      47.0,
+      11.6,
+      891.1,
+      2.0,
+      212.0,
+      null,
+      2183.2,
+      77.54,
+      36513.53,
+      100
+    ]
+  },
+  {
+    "name": "南京",
+    "level": "新一线",
+    "v": [
+      75180.0,
+      19428.78,
+      183015.0,
+      5.2,
+      9249.0,
+      19940.0,
+      -6.0,
+      2.0,
+      8.0,
+      16199827.0,
+      18386960.0,
+      82010664.0,
+      null,
+      11.1,
+      30454.0,
+      21351.0,
+      43.0,
+      41.4,
+      2606.0,
+      147.0,
+      3087.0,
+      1001.0,
+      162.0,
+      1412.2,
+      9733.0,
+      89101.0,
+      22.0,
+      7.74,
+      null,
+      13.0,
+      79.9,
+      270.0,
+      391.0,
+      10.23,
+      14.46,
+      null,
+      27.1,
+      16.2114488636364,
+      45.1241208791209,
+      28.0,
+      0.0,
+      36.0,
+      8.9,
+      578.46,
+      1.0,
+      182.0,
+      9.36602197802198,
+      957.7,
+      88.1,
+      19199.08,
+      80
+    ]
+  },
+  {
+    "name": "南宁",
+    "level": "二线",
+    "v": [
+      46381.0,
+      6212.46,
+      61338.0,
+      4.7,
+      1201.0,
+      909.0,
+      -10.0,
+      1.0,
+      11.0,
+      4008778.0,
+      8164829.0,
+      24247984.0,
+      null,
+      7.9,
+      10500.0,
+      8500.0,
+      25.0,
+      28.3,
+      1508.0,
+      79.0,
+      1884.0,
+      679.0,
+      69.0,
+      548.26,
+      10931.0,
+      62760.0,
+      20.0,
+      7.83,
+      null,
+      1.0,
+      71.4,
+      359.0,
+      1087.0,
+      14.46,
+      17.46,
+      null,
+      25.3,
+      6.86093049819875,
+      43.0944565147245,
+      45.0,
+      0.0,
+      33.0,
+      7.4,
+      132.1,
+      1.0,
+      118.0,
+      8.03557983952503,
+      897.19,
+      49.1,
+      9100.45,
+      70
+    ]
+  },
+  {
+    "name": "南昌",
+    "level": "二线",
+    "v": [
+      49091.0,
+      8141.69,
+      110067.0,
+      4.7,
+      1217.0,
+      874.0,
+      -2.0,
+      1.0,
+      3.0,
+      5001818.0,
+      9255526.0,
+      32024098.0,
+      null,
+      8.1,
+      9263.0,
+      9236.0,
+      23.0,
+      33.5,
+      720.0,
+      89.0,
+      1516.0,
+      382.0,
+      71.0,
+      586.09,
+      7248.0,
+      49475.0,
+      18.0,
+      7.18,
+      null,
+      1.0,
+      78.7,
+      316.0,
+      380.0,
+      9.74,
+      25.64,
+      null,
+      32.6,
+      12.8942866045379,
+      43.0499836160613,
+      56.0,
+      0.0,
+      34.0,
+      7.7,
+      160.25,
+      1.0,
+      150.0,
+      5.8254732437678,
+      667.04,
+      54.04,
+      13875.52,
+      70
+    ]
+  },
+  {
+    "name": "厦门",
+    "level": "新一线",
+    "v": [
+      74249.0,
+      8980.37,
+      151697.0,
+      5.7,
+      4362.0,
+      1223.0,
+      -2.0,
+      3.0,
+      5.0,
+      9321359.0,
+      10846541.0,
+      27433332.0,
+      null,
+      17.1,
+      36240.0,
+      29542.0,
+      42.0,
+      58.6,
+      1703.0,
+      69.0,
+      2089.0,
+      627.0,
+      67.0,
+      589.14,
+      7774.0,
+      56792.0,
+      10.0,
+      4.4,
+      null,
+      1.0,
+      19.5,
+      122.0,
+      300.0,
+      13.4,
+      18.09,
+      null,
+      17.4,
+      14.8121655613995,
+      44.3325499661247,
+      5.0,
+      0.0,
+      32.0,
+      7.6,
+      98.4,
+      1.0,
+      122.0,
+      8.14958079268293,
+      535.0,
+      85.94,
+      20273.91,
+      80
+    ]
+  },
+  {
+    "name": "合肥",
+    "level": "新一线",
+    "v": [
+      55832.0,
+      14210.0,
+      130074.0,
+      6.1,
+      9560.0,
+      12905.0,
+      29.0,
+      30.0,
+      1.0,
+      9296276.0,
+      14113371.0,
+      52708288.0,
+      null,
+      9.5,
+      17169.0,
+      12967.0,
+      27.0,
+      40.0,
+      1216.0,
+      125.0,
+      2385.0,
+      720.0,
+      92.0,
+      903.78,
+      10783.0,
+      73337.0,
+      17.0,
+      7.66,
+      null,
+      3.0,
+      86.3,
+      317.0,
+      470.0,
+      12.6,
+      17.54,
+      null,
+      34.0,
+      14.9548200307395,
+      45.8200037850114,
+      30.0,
+      0.0,
+      35.0,
+      7.9,
+      259.6,
+      1.0,
+      164.0,
+      6.85953822861469,
+      1000.2,
+      65.87,
+      14110.55,
+      70
+    ]
+  },
+  {
+    "name": "哈尔滨",
+    "level": "二线",
+    "v": [
+      40092.0,
+      6188.5,
+      56901.0,
+      4.6,
+      2562.0,
+      957.0,
+      -35.0,
+      1.0,
+      36.0,
+      3130744.0,
+      10806970.0,
+      23840008.0,
+      null,
+      7.5,
+      9485.0,
+      8011.0,
+      26.0,
+      25.7,
+      759.0,
+      85.0,
+      2191.0,
+      432.0,
+      46.0,
+      487.65,
+      12854.0,
+      62551.0,
+      24.0,
+      9.54,
+      null,
+      4.0,
+      76.0,
+      453.0,
+      399.0,
+      11.73,
+      13.65,
+      null,
+      39.8,
+      12.3181701868,
+      39.7885622231172,
+      2.0,
+      25.0,
+      34.0,
+      7.8,
+      91.57,
+      1.0,
+      75.0,
+      8.40690696737817,
+      985.8,
+      28.97,
+      10962.64,
+      80
+    ]
+  },
+  {
+    "name": "嘉兴",
+    "level": "二线",
+    "v": [
+      69232.0,
+      7851.06,
+      126851.0,
+      5.2,
+      4243.0,
+      1762.0,
+      1.0,
+      4.0,
+      3.0,
+      6320216.0,
+      8269900.0,
+      25134600.0,
+      null,
+      6.4,
+      16068.0,
+      11561.0,
+      23.0,
+      41.9,
+      1155.0,
+      70.0,
+      1163.0,
+      507.0,
+      50.0,
+      397.26,
+      7805.0,
+      45962.0,
+      5.0,
+      8.55,
+      null,
+      0.0,
+      8.3,
+      171.0,
+      151.0,
+      12.21,
+      18.21,
+      null,
+      27.0,
+      16.4266083061889,
+      42.9156340474812,
+      40.0,
+      0.0,
+      32.2,
+      null,
+      46.38,
+      null,
+      138.0,
+      7.42258251302837,
+      560.8,
+      76.42,
+      14746.61,
+      50
+    ]
+  },
+  {
+    "name": "大连",
+    "level": "新一线",
+    "v": [
+      49980.0,
+      10002.1,
+      116557.0,
+      5.7,
+      4939.0,
+      2081.0,
+      -40.0,
+      3.0,
+      43.0,
+      7502361.0,
+      10135047.0,
+      20085546.0,
+      null,
+      8.2,
+      14155.0,
+      10610.0,
+      29.0,
+      30.5,
+      1154.0,
+      67.0,
+      1860.0,
+      546.0,
+      59.0,
+      527.37,
+      13101.0,
+      50533.0,
+      12.0,
+      6.91,
+      null,
+      2.0,
+      32.8,
+      315.0,
+      386.0,
+      10.92,
+      18.45,
+      null,
+      26.0,
+      13.829999012053,
+      45.9381136834519,
+      1.0,
+      0.0,
+      37.0,
+      7.8,
+      236.95,
+      2.0,
+      62.0,
+      7.48488874876137,
+      754.4,
+      74.02,
+      13434.58,
+      80
+    ]
+  },
+  {
+    "name": "天津",
+    "level": "新一线",
+    "v": [
+      53581.0,
+      18539.82,
+      122752.0,
+      4.8,
+      10946.0,
+      12637.0,
+      7.0,
+      13.0,
+      6.0,
+      20275112.0,
+      32804208.0,
+      38206696.0,
+      null,
+      13.2,
+      20383.0,
+      16442.0,
+      36.0,
+      38.1,
+      1781.0,
+      122.0,
+      3797.0,
+      1030.0,
+      125.0,
+      1191.39,
+      12114.0,
+      94165.0,
+      60.0,
+      5.37,
+      null,
+      5.0,
+      59.7,
+      542.0,
+      884.0,
+      11.71,
+      15.57,
+      null,
+      36.2,
+      10.0238497076322,
+      38.0503067861558,
+      23.0,
+      0.0,
+      38.0,
+      9.0,
+      386.5,
+      1.0,
+      137.0,
+      6.52281122092443,
+      1364.0,
+      61.81,
+      24050.01,
+      100
+    ]
+  },
+  {
+    "name": "太原",
+    "level": "二线",
+    "v": [
+      44671.0,
+      5382.45,
+      102370.0,
+      1.3,
+      1936.0,
+      2458.0,
+      12.0,
+      15.0,
+      3.0,
+      4492358.0,
+      7772629.0,
+      19128768.0,
+      null,
+      8.1,
+      11279.0,
+      8937.0,
+      20.0,
+      37.2,
+      437.0,
+      66.0,
+      1348.0,
+      398.0,
+      44.0,
+      390.49,
+      6809.0,
+      41416.0,
+      35.0,
+      8.59,
+      null,
+      2.0,
+      74.8,
+      219.0,
+      409.0,
+      11.41,
+      15.84,
+      null,
+      33.6,
+      15.3439312039312,
+      42.3429166666667,
+      20.0,
+      5.0,
+      31.0,
+      7.5,
+      52.39,
+      1.0,
+      132.0,
+      8.06833333333333,
+      551.47,
+      57.8,
+      14094.38,
+      70
+    ]
+  },
+  {
+    "name": "宁波",
+    "level": "新一线",
+    "v": [
+      74806.0,
+      18716.0,
+      170363.0,
+      4.9,
+      7845.0,
+      7031.0,
+      4.0,
+      10.0,
+      6.0,
+      17858564.0,
+      22350944.0,
+      52125600.0,
+      null,
+      8.9,
+      21531.0,
+      16974.0,
+      33.0,
+      42.9,
+      2416.0,
+      121.0,
+      2461.0,
+      644.0,
+      104.0,
+      996.86,
+      11331.0,
+      80835.0,
+      15.0,
+      5.2,
+      null,
+      1.0,
+      18.7,
+      328.0,
+      388.0,
+      11.99,
+      17.86,
+      null,
+      26.8,
+      15.0801262659477,
+      41.7971881985627,
+      28.0,
+      0.0,
+      31.0,
+      7.2,
+      296.77,
+      1.0,
+      121.0,
+      6.48330839291323,
+      977.7,
+      79.9,
+      22860.74,
+      80
+    ]
+  },
+  {
+    "name": "常州",
+    "level": "二线",
+    "v": [
+      66365.0,
+      11158.7,
+      188366.0,
+      5.2,
+      5149.0,
+      5428.0,
+      6.0,
+      9.0,
+      3.0,
+      6802990.0,
+      8547676.0,
+      30501260.0,
+      null,
+      6.4,
+      16313.0,
+      11142.0,
+      24.0,
+      38.7,
+      963.0,
+      81.0,
+      1210.0,
+      398.0,
+      51.0,
+      510.72,
+      7338.0,
+      48330.0,
+      10.0,
+      6.68,
+      null,
+      2.0,
+      17.3,
+      174.0,
+      221.0,
+      11.93,
+      16.71,
+      null,
+      31.0,
+      15.8732662244283,
+      44.8610324316669,
+      43.0,
+      0.0,
+      30.0,
+      7.0,
+      53.99,
+      1.0,
+      160.0,
+      8.02595241467214,
+      538.6,
+      79.59,
+      15870.17,
+      50
+    ]
+  },
+  {
+    "name": "广州",
+    "level": "一线",
+    "v": [
+      77801.0,
+      32039.46,
+      161634.0,
+      4.0,
+      13121.0,
+      14747.0,
+      26.0,
+      28.0,
+      2.0,
+      19450562.0,
+      29716480.0,
+      110126200.0,
+      null,
+      18.7,
+      34109.0,
+      35675.0,
+      52.0,
+      57.2,
+      6204.0,
+      254.0,
+      6572.0,
+      2181.0,
+      230.0,
+      1951.08,
+      38620.0,
+      192419.0,
+      67.0,
+      6.37,
+      null,
+      7.0,
+      146.9,
+      555.0,
+      992.0,
+      12.31,
+      17.83,
+      null,
+      21.5,
+      19.6175390062372,
+      44.3634949869927,
+      38.0,
+      0.0,
+      37.0,
+      9.4,
+      779.9,
+      1.0,
+      190.0,
+      8.16379168249282,
+      1897.8,
+      65.45,
+      15658.38,
+      80
+    ]
+  },
+  {
+    "name": "成都",
+    "level": "新一线",
+    "v": [
+      52134.0,
+      24763.6,
+      103465.0,
+      5.8,
+      12526.0,
+      9268.0,
+      -13.0,
+      8.0,
+      21.0,
+      19290570.0,
+      25868282.0,
+      100016256.0,
+      null,
+      10.5,
+      18707.0,
+      13938.0,
+      36.0,
+      32.3,
+      5229.0,
+      317.0,
+      5640.0,
+      3291.0,
+      218.0,
+      2035.7,
+      32859.0,
+      207958.0,
+      61.0,
+      8.33,
+      null,
+      8.0,
+      114.1,
+      642.0,
+      636.0,
+      11.76,
+      16.85,
+      null,
+      33.0,
+      11.0190203230849,
+      45.2491140140075,
+      15.0,
+      0.0,
+      38.0,
+      9.7,
+      718.94,
+      2.0,
+      180.0,
+      10.3986890212543,
+      2147.4,
+      74.57,
+      12046.33,
+      80
+    ]
+  },
+  {
+    "name": "无锡",
+    "level": "新一线",
+    "v": [
+      72232.0,
+      16773.94,
+      206278.0,
+      5.1,
+      7005.0,
+      13914.0,
+      9.0,
+      14.0,
+      5.0,
+      11954222.0,
+      13901893.0,
+      35675524.0,
+      null,
+      7.1,
+      20057.0,
+      13188.0,
+      27.0,
+      40.7,
+      1740.0,
+      125.0,
+      1783.0,
+      713.0,
+      96.0,
+      875.65,
+      8374.0,
+      67712.0,
+      12.0,
+      7.57,
+      null,
+      2.0,
+      20.2,
+      206.0,
+      235.0,
+      11.33,
+      16.6,
+      null,
+      26.0,
+      15.3242609714807,
+      44.721545615589,
+      28.0,
+      0.0,
+      32.0,
+      7.4,
+      144.35,
+      1.0,
+      163.0,
+      8.18063551815766,
+      750.5,
+      85.99,
+      18523.51,
+      50
+    ]
+  },
+  {
+    "name": "昆明",
+    "level": "二线",
+    "v": [
+      47301.0,
+      8637.45,
+      90821.0,
+      4.2,
+      1881.0,
+      527.0,
+      0.0,
+      1.0,
+      1.0,
+      5580042.0,
+      8377916.0,
+      35742832.0,
+      null,
+      7.5,
+      11821.0,
+      9762.0,
+      24.0,
+      33.9,
+      2076.0,
+      107.0,
+      2849.0,
+      1926.0,
+      73.0,
+      794.62,
+      13604.0,
+      88163.0,
+      27.0,
+      8.05,
+      null,
+      1.0,
+      79.3,
+      349.0,
+      717.0,
+      12.32,
+      16.58,
+      null,
+      24.0,
+      13.1065650748649,
+      44.0719591169594,
+      0.0,
+      0.0,
+      31.0,
+      7.6,
+      165.85,
+      1.0,
+      124.0,
+      5.3224091200629,
+      868.7,
+      66.6,
+      9644.2,
+      70
+    ]
+  },
+  {
+    "name": "杭州",
+    "level": "新一线",
+    "v": [
+      76777.0,
+      23011.0,
+      161129.0,
+      5.2,
+      15310.0,
+      4171.0,
+      5.0,
+      11.0,
+      6.0,
+      26168108.0,
+      26362270.0,
+      76706000.0,
+      null,
+      16.5,
+      27919.0,
+      31839.0,
+      54.0,
+      49.1,
+      4751.0,
+      198.0,
+      4351.0,
+      1508.0,
+      204.0,
+      1871.71,
+      15224.0,
+      124393.0,
+      20.0,
+      8.01,
+      null,
+      2.0,
+      51.4,
+      403.0,
+      507.0,
+      11.49,
+      16.88,
+      null,
+      27.9,
+      15.0676904307749,
+      44.1822287992402,
+      40.0,
+      0.0,
+      34.0,
+      8.1,
+      516.0,
+      1.0,
+      174.0,
+      8.0269903148502,
+      1262.4,
+      99.26,
+      20882.66,
+      80
+    ]
+  },
+  {
+    "name": "武汉",
+    "level": "新一线",
+    "v": [
+      59732.0,
+      22147.35,
+      145471.0,
+      5.6,
+      13987.0,
+      16222.0,
+      -37.0,
+      1.0,
+      38.0,
+      16011990.0,
+      22040782.0,
+      75319040.0,
+      null,
+      8.2,
+      15513.0,
+      11501.0,
+      32.0,
+      30.0,
+      2474.0,
+      177.0,
+      3936.0,
+      1166.0,
+      164.0,
+      1694.96,
+      17857.0,
+      108897.0,
+      36.0,
+      6.72,
+      null,
+      7.0,
+      116.1,
+      409.0,
+      610.0,
+      11.4,
+      18.02,
+      null,
+      35.5,
+      15.0341875995796,
+      43.1369344487055,
+      37.0,
+      0.0,
+      37.0,
+      8.6,
+      553.4,
+      1.0,
+      193.0,
+      8.65738073002563,
+      1380.91,
+      72.65,
+      15961.06,
+      80
+    ]
+  },
+  {
+    "name": "沈阳",
+    "level": "新一线",
+    "v": [
+      49758.0,
+      9100.3,
+      88519.0,
+      2.0,
+      5234.0,
+      2054.0,
+      -98.0,
+      9.0,
+      107.0,
+      8008539.0,
+      10840553.0,
+      42104016.0,
+      null,
+      6.1,
+      11970.0,
+      7882.0,
+      26.0,
+      25.3,
+      1365.0,
+      107.0,
+      2545.0,
+      684.0,
+      75.0,
+      887.73,
+      15093.0,
+      71845.0,
+      30.0,
+      8.61,
+      null,
+      2.0,
+      44.7,
+      317.0,
+      285.0,
+      8.84,
+      21.4,
+      null,
+      31.1,
+      14.6769541778976,
+      42.6747130434783,
+      4.0,
+      15.0,
+      36.0,
+      7.9,
+      202.85,
+      1.0,
+      117.0,
+      8.23532173913044,
+      924.3,
+      73.88,
+      11728.39,
+      80
+    ]
+  },
+  {
+    "name": "济南",
+    "level": "新一线",
+    "v": [
+      54390.0,
+      14210.0,
+      135347.0,
+      5.4,
+      6724.0,
+      9083.0,
+      -1.0,
+      4.0,
+      5.0,
+      10608223.0,
+      13652948.0,
+      51990276.0,
+      null,
+      9.0,
+      15453.0,
+      13108.0,
+      25.0,
+      43.7,
+      878.0,
+      79.0,
+      2258.0,
+      960.0,
+      81.0,
+      718.2,
+      9785.0,
+      77322.0,
+      15.0,
+      9.33,
+      null,
+      2.0,
+      63.2,
+      334.0,
+      608.0,
+      11.61,
+      16.05,
+      null,
+      32.0,
+      14.8090017058626,
+      44.7376810173728,
+      30.0,
+      0.0,
+      34.0,
+      8.3,
+      182.2,
+      1.0,
+      173.0,
+      8.3752909754723,
+      951.5,
+      77.7,
+      14348.87,
+      80
+    ]
+  },
+  {
+    "name": "海口",
+    "level": "二线",
+    "v": [
+      42792.0,
+      2562.85,
+      79390.0,
+      4.8,
+      611.0,
+      637.0,
+      0.0,
+      3.0,
+      3.0,
+      2668655.0,
+      3695399.0,
+      10888309.0,
+      null,
+      11.3,
+      17625.0,
+      12456.0,
+      31.0,
+      33.5,
+      1257.0,
+      44.0,
+      1092.0,
+      338.0,
+      35.0,
+      311.85,
+      4870.0,
+      29319.0,
+      8.0,
+      6.99,
+      null,
+      1.0,
+      18.4,
+      108.0,
+      139.0,
+      13.33,
+      16.47,
+      null,
+      14.5,
+      11.7902563186568,
+      43.8567191011236,
+      42.0,
+      0.0,
+      29.0,
+      7.5,
+      null,
+      1.0,
+      2.0,
+      17.3468314606742,
+      303.14,
+      72.22,
+      12190.4,
+      70
+    ]
+  },
+  {
+    "name": "深圳",
+    "level": "一线",
+    "v": [
+      81123.0,
+      38731.8,
+      195230.0,
+      5.5,
+      24985.0,
+      22255.0,
+      1.0,
+      22.0,
+      21.0,
+      41129192.0,
+      50124308.0,
+      104861912.0,
+      null,
+      31.3,
+      52900.0,
+      60980.0,
+      77.0,
+      66.0,
+      5024.0,
+      270.0,
+      6483.0,
+      2468.0,
+      259.0,
+      2020.62,
+      31896.0,
+      175304.0,
+      32.0,
+      4.4,
+      null,
+      1.0,
+      10.5,
+      521.0,
+      353.0,
+      12.3,
+      17.59,
+      null,
+      15.2,
+      14.7514628922828,
+      45.2536158077001,
+      32.0,
+      0.0,
+      33.0,
+      7.9,
+      622.73,
+      1.0,
+      160.0,
+      8.5097983295987,
+      1798.95,
+      82.05,
+      27863.09,
+      80
+    ]
+  },
+  {
+    "name": "温州",
+    "level": "二线",
+    "v": [
+      70829.0,
+      10213.9,
+      89821.0,
+      6.1,
+      4613.0,
+      623.0,
+      0.0,
+      1.0,
+      1.0,
+      6226842.0,
+      11759428.0,
+      42570828.0,
+      null,
+      7.5,
+      18591.0,
+      13596.0,
+      27.0,
+      42.0,
+      1824.0,
+      103.0,
+      1878.0,
+      693.0,
+      53.0,
+      495.17,
+      11536.0,
+      74091.0,
+      11.0,
+      5.04,
+      null,
+      0.0,
+      14.0,
+      422.0,
+      558.0,
+      12.2,
+      16.76,
+      null,
+      23.3,
+      13.2950178879025,
+      44.8350124252804,
+      39.0,
+      0.0,
+      29.0,
+      6.6,
+      117.13,
+      1.0,
+      121.0,
+      8.66505473839748,
+      985.2,
+      52.95,
+      11936.08,
+      50
+    ]
+  },
+  {
+    "name": "珠海",
+    "level": "二线",
+    "v": [
+      67215.0,
+      4573.1,
+      170306.0,
+      2.7,
+      2757.0,
+      2561.0,
+      4.0,
+      7.0,
+      3.0,
+      4825086.0,
+      6718565.0,
+      10789715.0,
+      null,
+      11.2,
+      22017.0,
+      17976.0,
+      36.0,
+      41.6,
+      1058.0,
+      48.0,
+      843.0,
+      328.0,
+      57.0,
+      396.79,
+      5297.0,
+      29965.0,
+      6.0,
+      5.56,
+      null,
+      2.0,
+      6.6,
+      90.0,
+      149.0,
+      11.05,
+      21.76,
+      null,
+      19.0,
+      22.2755794782271,
+      47.1316977428852,
+      27.0,
+      0.0,
+      32.2,
+      null,
+      null,
+      1.0,
+      65.0,
+      8.56198887798495,
+      251.85,
+      71.82,
+      26676.85,
+      50
+    ]
+  },
+  {
+    "name": "石家庄",
+    "level": "二线",
+    "v": [
+      39871.0,
+      8651.7,
+      67099.0,
+      6.0,
+      3348.0,
+      4105.0,
+      -5.0,
+      2.0,
+      7.0,
+      7378942.0,
+      12748334.0,
+      28752066.0,
+      null,
+      9.1,
+      14304.0,
+      10662.0,
+      23.0,
+      38.6,
+      539.0,
+      115.0,
+      1956.0,
+      489.0,
+      54.0,
+      485.79,
+      9980.0,
+      58883.0,
+      30.0,
+      6.87,
+      null,
+      0.0,
+      68.2,
+      443.0,
+      1465.0,
+      14.26,
+      17.96,
+      null,
+      43.0,
+      12.5245146906889,
+      44.0200188412624,
+      35.0,
+      0.0,
+      35.0,
+      9.0,
+      76.53,
+      1.0,
+      171.0,
+      7.43360596069028,
+      1124.66,
+      57.88,
+      11335.28,
+      70
+    ]
+  },
+  {
+    "name": "福州",
+    "level": "新一线",
+    "v": [
+      51460.0,
+      15112.32,
+      152846.0,
+      5.6,
+      4218.0,
+      1481.0,
+      -29.0,
+      1.0,
+      30.0,
+      7540813.0,
+      10049040.0,
+      49637644.0,
+      null,
+      11.9,
+      19368.0,
+      16734.0,
+      34.0,
+      41.0,
+      1486.0,
+      83.0,
+      1762.0,
+      463.0,
+      61.0,
+      560.28,
+      10300.0,
+      59601.0,
+      20.0,
+      6.18,
+      null,
+      1.0,
+      43.5,
+      334.0,
+      876.0,
+      13.81,
+      17.61,
+      null,
+      17.0,
+      15.971485969801,
+      44.0216652001237,
+      28.0,
+      0.0,
+      34.0,
+      7.5,
+      205.7,
+      1.0,
+      131.0,
+      8.30709410449713,
+      850.1,
+      75.04,
+      11821.01,
+      70
+    ]
+  },
+  {
+    "name": "苏州",
+    "level": "新一线",
+    "v": [
+      77524.0,
+      27695.1,
+      190605.0,
+      5.4,
+      16833.0,
+      24297.0,
+      6.0,
+      15.0,
+      9.0,
+      24568118.0,
+      26212766.0,
+      95829176.0,
+      null,
+      8.0,
+      23673.0,
+      15966.0,
+      32.0,
+      41.6,
+      3859.0,
+      203.0,
+      3628.0,
+      1541.0,
+      202.0,
+      1671.0,
+      17129.0,
+      124709.0,
+      16.0,
+      7.1,
+      null,
+      1.0,
+      30.5,
+      357.0,
+      447.0,
+      11.56,
+      16.95,
+      null,
+      33.1,
+      15.2454199451774,
+      44.6650115305508,
+      27.0,
+      0.0,
+      34.0,
+      7.9,
+      346.76,
+      null,
+      182.0,
+      14.9186005443251,
+      1298.7,
+      93.73,
+      20183.85,
+      50
+    ]
+  },
+  {
+    "name": "西安",
+    "level": "新一线",
+    "v": [
+      45082.0,
+      13902.67,
+      92128.0,
+      4.7,
+      7287.0,
+      9293.0,
+      -66.0,
+      2.0,
+      68.0,
+      9519208.0,
+      17304672.0,
+      48116044.0,
+      null,
+      9.4,
+      16750.0,
+      11682.0,
+      30.0,
+      32.5,
+      1929.0,
+      143.0,
+      3409.0,
+      1270.0,
+      148.0,
+      1303.36,
+      15063.0,
+      107172.0,
+      27.0,
+      7.11,
+      null,
+      7.0,
+      85.0,
+      517.0,
+      1174.0,
+      13.06,
+      17.62,
+      null,
+      34.0,
+      12.0051424686322,
+      44.5106832905513,
+      40.0,
+      0.0,
+      34.0,
+      8.8,
+      422.81,
+      1.0,
+      180.0,
+      5.02712382349346,
+      1316.76,
+      55.01,
+      13141.86,
+      80
+    ]
+  },
+  {
+    "name": "贵阳",
+    "level": "二线",
+    "v": [
+      42572.0,
+      6038.15,
+      81670.0,
+      5.1,
+      1146.0,
+      553.0,
+      -4.0,
+      1.0,
+      5.0,
+      4462045.0,
+      7786135.0,
+      25267738.0,
+      null,
+      6.5,
+      9287.0,
+      7270.0,
+      24.0,
+      25.2,
+      1160.0,
+      63.0,
+      1651.0,
+      1027.0,
+      57.0,
+      550.75,
+      8799.0,
+      59060.0,
+      26.0,
+      7.9,
+      null,
+      1.0,
+      47.3,
+      289.0,
+      532.0,
+      13.03,
+      18.73,
+      null,
+      19.0,
+      18.0765494527429,
+      42.0571076100645,
+      4.0,
+      0.0,
+      33.0,
+      8.0,
+      149.13,
+      1.0,
+      151.0,
+      9.48582590146239,
+      660.25,
+      57.31,
+      11792.71,
+      70
+    ]
+  },
+  {
+    "name": "郑州",
+    "level": "新一线",
+    "v": [
+      45994.0,
+      15244.6,
+      105416.0,
+      5.4,
+      4583.0,
+      6775.0,
+      -7.0,
+      1.0,
+      8.0,
+      11658481.0,
+      15196232.0,
+      56230736.0,
+      null,
+      8.1,
+      13312.0,
+      9414.0,
+      23.0,
+      34.1,
+      1177.0,
+      151.0,
+      3201.0,
+      847.0,
+      111.0,
+      976.98,
+      12762.0,
+      101637.0,
+      22.0,
+      9.09,
+      null,
+      2.0,
+      139.4,
+      559.0,
+      981.0,
+      11.83,
+      19.5,
+      null,
+      38.45,
+      14.6177902810718,
+      41.1758804487358,
+      35.0,
+      0.0,
+      34.0,
+      8.7,
+      449.81,
+      1.0,
+      209.0,
+      3.61610481665457,
+      1308.6,
+      76.72,
+      11612.59,
+      70
+    ]
+  },
+  {
+    "name": "重庆",
+    "level": "新一线",
+    "v": [
+      39713.0,
+      33757.93,
+      94135.0,
+      5.3,
+      8736.0,
+      2444.0,
+      2.0,
+      5.0,
+      3.0,
+      24407688.0,
+      53045604.0,
+      151302528.0,
+      null,
+      7.3,
+      10948.0,
+      8746.0,
+      26.0,
+      28.0,
+      3239.0,
+      299.0,
+      4283.0,
+      1883.0,
+      215.0,
+      2048.1,
+      30186.0,
+      219349.0,
+      41.0,
+      7.77,
+      null,
+      2.0,
+      110.0,
+      1120.0,
+      2637.0,
+      13.49,
+      15.14,
+      null,
+      31.0,
+      20.9301402018282,
+      43.8884327168367,
+      45.0,
+      0.0,
+      39.0,
+      9.6,
+      576.2,
+      5.0,
+      169.0,
+      7.10805393586006,
+      3190.47,
+      46.01,
+      16626.27,
+      100
+    ]
+  },
+  {
+    "name": "长春",
+    "level": "二线",
+    "v": [
+      42350.0,
+      8005.59,
+      77084.0,
+      4.9,
+      2758.0,
+      4389.0,
+      -35.0,
+      1.0,
+      36.0,
+      5765154.0,
+      10749675.0,
+      21098496.0,
+      null,
+      6.3,
+      9500.0,
+      7200.0,
+      25.0,
+      24.0,
+      645.0,
+      85.0,
+      1978.0,
+      513.0,
+      60.0,
+      621.59,
+      11734.0,
+      60020.0,
+      23.0,
+      7.53,
+      null,
+      2.0,
+      53.7,
+      413.0,
+      413.0,
+      11.44,
+      12.4,
+      null,
+      32.0,
+      14.1800011378074,
+      43.7099932652956,
+      1.0,
+      20.0,
+      36.0,
+      8.3,
+      151.4,
+      1.0,
+      85.0,
+      5.88145193320555,
+      908.51,
+      53.63,
+      11832.2,
+      80
+    ]
+  },
+  {
+    "name": "长沙",
+    "level": "新一线",
+    "v": [
+      63660.0,
+      15737.82,
+      136927.0,
+      4.0,
+      6911.0,
+      8493.0,
+      -5.0,
+      2.0,
+      7.0,
+      12270734.0,
+      16268337.0,
+      55616668.0,
+      null,
+      5.6,
+      11077.0,
+      9023.0,
+      28.0,
+      26.9,
+      2132.0,
+      154.0,
+      3571.0,
+      1158.0,
+      116.0,
+      1124.19,
+      16659.0,
+      96930.0,
+      34.0,
+      8.47,
+      null,
+      4.0,
+      79.6,
+      386.0,
+      882.0,
+      11.2,
+      20.06,
+      null,
+      37.2,
+      13.6194442396993,
+      47.8921845043419,
+      42.0,
+      0.0,
+      33.0,
+      8.5,
+      218.28,
+      1.0,
+      184.0,
+      8.85891507838051,
+      1061.65,
+      75.43,
+      15323.63,
+      70
+    ]
+  },
+  {
+    "name": "青岛",
+    "level": "新一线",
+    "v": [
+      59922.0,
+      17560.67,
+      152174.0,
+      5.4,
+      8164.0,
+      9556.0,
+      -2.0,
+      2.0,
+      4.0,
+      13378595.0,
+      17187996.0,
+      63189388.0,
+      null,
+      8.5,
+      17615.0,
+      13503.0,
+      26.0,
+      43.3,
+      1959.0,
+      102.0,
+      2880.0,
+      1063.0,
+      109.0,
+      984.95,
+      14958.0,
+      90119.0,
+      28.0,
+      6.64,
+      null,
+      2.0,
+      42.4,
+      363.0,
+      672.0,
+      11.33,
+      16.29,
+      null,
+      24.0,
+      17.8363573269879,
+      44.50459401574,
+      5.0,
+      0.0,
+      40.0,
+      9.1,
+      352.68,
+      1.0,
+      140.0,
+      8.27675618132738,
+      1044.25,
+      77.84,
+      16459.66,
+      80
+    ]
+  }
+];
+
+</script>
+<script>
+// ===== constants.js =====
+// City Pulse — Constants
+// All static data: industries, personas, questions, weights, dimensions
+
+var INDUSTRIES = window.INDUSTRIES = [
+  {id:1,name:'互联网/软件',track:'market'},
+  {id:2,name:'金融/保险',track:'state'},
+  {id:3,name:'制造业',track:'market'},
+  {id:4,name:'批发零售/电商',track:'market'},
+  {id:5,name:'建筑业',track:'mixed',mixed_w:{state:0.5,market:0.5}},
+  {id:6,name:'房地产业',track:'market'},
+  {id:7,name:'交通运输/物流',track:'mixed',mixed_w:{state:0.4,market:0.6}},
+  {id:8,name:'教育',track:'mixed',mixed_w:{state:0.6,market:0.4}},
+  {id:9,name:'医疗健康',track:'mixed',mixed_w:{state:0.55,market:0.45}},
+  {id:10,name:'住宿餐饮/文旅',track:'market'},
+  {id:11,name:'商务服务/咨询',track:'market'},
+  {id:12,name:'公共管理/社保',track:'state'},
+  {id:13,name:'科研/技术服务',track:'mixed',mixed_w:{state:0.45,market:0.55}},
+  {id:14,name:'文化/传媒/体育',track:'market'},
+  {id:15,name:'农林牧渔',track:'mixed',mixed_w:{state:0.3,market:0.7}},
+  {id:16,name:'能源/资源/公用',track:'state'},
+  {id:17,name:'新能源/环保',track:'market'},
+  {id:18,name:'军工/国防',track:'state'},
+  {id:19,name:'信息传输/电信',track:'market'}
+];
+
+var SYSTEM_PREFS = window.SYSTEM_PREFS = [
+  {key:'both',label:'都可以',desc:'还在观望，市场化与体制内机会都纳入考量'},
+  {key:'market',label:'体制外',desc:'倾向互联网、金融、创业等市场化赛道'},
+  {key:'state',label:'体制内',desc:'倾向考公、央企、事业单位等体制内方向'}
+];
+
+var PERSONAS = window.PERSONAS = [
+  {key:'应届生/单身青年',icon:'🎓',text:'刚毕业0-3年，拼事业、社交、低成本试错。起薪和跳槽空间是第一考量'},
+  {key:'年轻家庭',icon:'👨‍👩‍👧',text:'已婚/备孕/有孩，学区、医疗、住房三驾马车。教育是未来20年的押注'},
+  {key:'自由/创业者',icon:'🚀',text:'自由职业、自媒体、初创团队。市场机会和低成本是命脉'}
+];
+
+var PERSONA_WEIGHTS = window.PERSONA_WEIGHTS = {
+  '应届生/单身青年': [30, 15, 18, 5, 12, 8, 8, 4],
+  '年轻家庭':       [18, 22, 8, 15, 22, 8, 4, 3],
+  '自由/创业者':    [32, 12, 15, 5, 8, 12, 10, 6]
+};
+
+var PRIORITIES = window.PRIORITIES = {
+  '应届生/单身青年':['人均可支配收入','人均GDP','高新技术企业数量','房价收入比'],
+  '年轻家庭':       ['房价收入比','三甲医院数量','双一流高校数量','每千人医疗卫生机构床位数'],
+  '自由/创业者':    ['人均可支配收入','高新技术企业数量','科技型中小企业数量','高新企业净迁入']
+};
+
+var QUESTIONS = window.QUESTIONS = [
+  {id:'Q1',dim:'energy',name:'能量来源',a:'外向充电',b:'独处充电',
+   q:'在周末，你最理想的一天是怎样的？',
+   answers:{A:'约朋友聚会、参加活动，接触很多新信息',B:'和熟悉的朋友安静地待着，或独自散步',C:'看情况，有时想热闹，有时想安静'}},
+  {id:'Q2',dim:'risk',name:'风险偏好',a:'激进扩张',b:'保守防御',
+   q:'面对一个新机会，你通常？',
+   answers:{A:'兴奋，跃跃欲试，先冲再说',B:'观望一下，评估风险再做决定',C:'取决于具体是什么机会'}},
+  {id:'Q3',dim:'time',name:'时间偏好',a:'延迟满足',b:'即时满足',
+   q:'当有一个需要投入但回报在一年后的项目时，你？',
+   answers:{A:'现在就投入，未来一定会来',B:'算了，不想等那么久',C:'取决于回报有多诱人'}},
+  {id:'Q4',dim:'social',name:'社交密度',a:'高频社交',b:'低频深度',
+   q:'你理想的社交频率是？',
+   answers:{A:'每天都有社交活动，认识新朋友',B:'偶尔深度交流，宁缺毋滥',C:'弹性，有高质量的就参加，没有就不强求'}},
+  {id:'Q5',dim:'space',name:'空间偏好',a:'高密度都市',b:'低密度自然',
+   q:'你更愿意住在哪里？',
+   answers:{A:'市中心或商务区，交通便利，热闹便利',B:'郊区或自然环境附近，安静宽敞',C:'看工作和生活需求，灵活选择'}},
+  {id:'Q6',dim:'meaning',name:'意义来源',a:'外部认可',b:'内在驱动',
+   q:'什么样的成就会让你最有满足感？',
+   answers:{A:'获得社会认可、他人羡慕、体制内的头衔',B:'达成自己设定的标准，解决了自己想解决的问题',C:'两者都有，视情况而定'}}
+];
+
+var MOBILITY = window.MOBILITY = [
+  {key:'L1',name:'L1 锚定型',desc:'优先考虑本省城市，不愿远离家乡或社会关系。'},
+  {key:'L2',name:'L2 区域型',desc:'愿意在同一大区内移动，兼顾机会与熟悉感。'},
+  {key:'L3',name:'L3 全国型',desc:'全国城市都可纳入比较，优先看发展与定居条件。'}
+];
+
+var REGIONS = window.REGIONS = {
+  '华东': ['上海','江苏','浙江','安徽','福建','山东','台湾'],
+  '华南': ['广东','广西','海南','香港','澳门'],
+  '华中': ['湖北','湖南','河南','江西'],
+  '华北': ['北京','天津','河北','山西','内蒙古'],
+  '东北': ['辽宁','吉林','黑龙江'],
+  '西南': ['四川','重庆','贵州','云南','西藏'],
+  '西北': ['陕西','甘肃','青海','宁夏','新疆'],
+};
+
+var PROVINCES = window.PROVINCES = [
+  '北京','天津','上海','重庆',
+  '河北','山西','辽宁','吉林','黑龙江',
+  '江苏','浙江','安徽','福建','江西','山东',
+  '河南','湖北','湖南','广东','海南',
+  '四川','贵州','云南','陕西','甘肃',
+  '青海','内蒙古','广西','西藏','宁夏','新疆',
+  '台湾','香港','澳门',
+];
+
+var CITY_PROVINCE = window.CITY_PROVINCE = {
+  '北京':'北京','天津':'天津','上海':'上海','重庆':'重庆',
+  '石家庄':'河北','太原':'山西','沈阳':'辽宁','大连':'辽宁','长春':'吉林','哈尔滨':'黑龙江',
+  '南京':'江苏','苏州':'江苏','常州':'江苏','无锡':'江苏',
+  '杭州':'浙江','宁波':'浙江','温州':'浙江','嘉兴':'浙江',
+  '合肥':'安徽','福州':'福建','厦门':'福建',
+  '济南':'山东','青岛':'山东',
+  '郑州':'河南','武汉':'湖北','长沙':'湖南','南昌':'江西',
+  '广州':'广东','深圳':'广东','珠海':'广东','东莞':'广东','佛山':'广东',
+  '南宁':'广西','海口':'海南',
+  '成都':'四川','贵阳':'贵州','昆明':'云南','西安':'陕西','兰州':'甘肃',
+};
+
+var DIMENSIONS = window.DIMENSIONS = [
+  {key:'d1', label:'经济活力'},
+  {key:'d2', label:'住房可负担'},
+  {key:'d3', label:'生活便利'},
+  {key:'d4', label:'医疗健康'},
+  {key:'d5', label:'教育资源'},
+  {key:'d6', label:'环境气候'},
+  {key:'d7', label:'交通通勤'},
+  {key:'d8', label:'治理基础'}
+];
+
+var FIELD_LABELS = window.FIELD_LABELS = {
+  '人均可支配收入':'居民实际可用的年收入均值','人均GDP':'地区生产总值除以常住人口','GDP增长率':'经济总量年度增长速度',
+  '高新技术企业数量':'经认定的国家级高新技术企业总数','科技型中小企业数量':'入库的科技型中小企业总数','高新企业净迁入':'高新企业迁入数与迁出数的差额',
+  '房价收入比':'家庭年收入与购房总价的比值关系','新房均价':'新建商品住宅的平均成交价格','房租':'单位面积月租金','二手房均价':'二手住宅平均挂牌价格',
+  '咖啡馆数量':'全市咖啡馆门店总数','电影院数量':'全市电影院总数','运动场馆数量':'全市运动健身场馆总数','酒吧数量':'全市酒吧总数',
+  '购物中心数量':'大型购物中心总数','超市便利店数量':'超市及便利店门店总数',
+  '三甲医院数量':'三级甲等综合医院配置数量','每千人医疗卫生机构床位数':'每千常住人口拥有的医疗机构床位数',
+  '双一流高校数量':'国家双一流建设高校总数','高校在校生':'普通高校在读学生总规模','中学生师比':'普通中学教师与学生的比例','小学生师比':'普通小学教师与学生的比例',
+  '年均PM2.5':'全年PM2.5平均浓度','人均公园绿地面积':'每常住人口拥有的公园绿地面积','建成区绿化覆盖率':'建成区绿化覆盖面积占比',
+  '极端高温天数':'全年最高气温超过35°C的天数','极端低温天数':'全年最低气温低于0°C的天数',
+  '通勤时耗':'单程通勤平均所耗时间','轨交里程':'城市轨道交通运营线路总长度','机场数量':'民用运输机场数量',
+  '建成区路网密度':'建成区单位面积的道路长度','高铁可直达城市数':'从该市高铁站可直达的城市数量',
+  '财政自给率':'地方财政收入占支出的比重','人均预算支出':'地方一般公共预算支出人均值','城市行政层级':'国家行政体系中的级别定位','常住人口':'城市实际长期居住人口规模'
+};
+
+var DETAIL_FIELDS = window.DETAIL_FIELDS = [
+  '人均可支配收入','人均GDP','GDP增长率','高新技术企业数量','科技型中小企业数量','高新企业净迁入',
+  '房价收入比','新房均价','房租','咖啡馆数量','购物中心数量','三甲医院数量','每千人医疗卫生机构床位数',
+  '双一流高校数量','高校在校生','年均PM2.5','建成区绿化覆盖率','极端低温天数',
+  '通勤时耗','轨交里程','财政自给率','城市行政层级','常住人口'
+];
+
+// D1 双轨 × 体制偏好 混合查表 [state_weight, market_weight]
+var TRACK_PREF_BLEND = window.TRACK_PREF_BLEND = {
+  market: { market: [0, 1], both: [0.15, 0.85], state: [0.30, 0.70] },
+  state:  { market: [0.70, 0.30], both: [0.85, 0.15], state: [1, 0] },
+};
+
+
+// ===== config.js =====
+// City Pulse — Scoring Configuration
+// All tunable parameters extracted from inline magic numbers
+
+var SCORING_CONFIG = window.SCORING_CONFIG = {
+  // 气质偏移量：dim index → delta value
+  temperament: {
+    energy:  { high: { 2: +4, 5: -4 }, low: { 5: +4, 2: -4 } },
+    risk:    { high: { 0: +5, 1: -5 }, low: { 1: +5, 0: -5 } },
+    time:    { high: { 0: +5, 2: -5 }, low: { 2: +5, 0: -5 } },
+    social:  { high: { 2: +3, 7: -3 } },
+    space:   { high: { 6: +3, 5: -3 }, low: { 5: +5, 6: -3, 0: -2 } },
+    meaning: { high: { 7: +5, 4: -5 }, low: { 4: +5, 7: -5 } },
+  },
+  // 流动性偏移
+  mobility: {
+    L1: { 1: +5 },
+    L3: { 0: +3 },
+  },
+  // 地理加分（在总分上叠加，不影响维度评分）
+  geo: {
+    sameProvince: 12,   // 同省加分
+    sameRegion: 6,      // 同区域（不同省）加分
+  },
+  // 权重安全区
+  weightFloor: 3,
+  weightCeil: 40,
+  // 气质判定阈值
+  temperamentHigh: 65,
+  temperamentLow: 35,
+  // 归一化方法选择: 'percentile' | 'minmax'
+  normalization: 'percentile',
+};
+
+
+// ===== data.js =====
+// City Pulse — Data Access Layer
+// Adapts compact array format to getVal(city, field) interface
+
+var DataAccess = window.DataAccess = (() => {
+  let fieldIndex = {};
+  let header = null;
+
+  function init() {
+    header = window.CITY_DATA_HEADER;
+    if (!header || !header.fields) {
+      console.error('CITY_DATA_HEADER not found');
+      return false;
+    }
+    fieldIndex = {};
+    header.fields.forEach((f, i) => { fieldIndex[f] = i; });
+    return true;
+  }
+
+  function getVal(city, field) {
+    const i = fieldIndex[field];
+    if (i === undefined) return null;
+    const v = city.v[i];
+    return (v === null || v === undefined) ? null : v;
+  }
+
+  function getIndicator(city, field) {
+    const i = fieldIndex[field];
+    if (i === undefined) return null;
+    const v = city.v[i];
+    if (v === null || v === undefined) return null;
+    return { value: v, unit: header.units[i], year: header.years[i] };
+  }
+
+  function getCities() {
+    return window.CITY_DATA || [];
+  }
+
+  function getFieldNames() {
+    return header ? header.fields : [];
+  }
+
+  return { init, getVal, getIndicator, getCities, getFieldNames };
+})();
+
+
+// ===== scoring.js =====
+// City Pulse — Scoring Engine
+// Normalization functions + D1~D8 dimension scores + weight computation
+// Uses percentile rank as primary normalization method
+
+var Scoring = window.Scoring = (() => {
+  const getVal = DataAccess.getVal;
+
+  // ===== UTILITY =====
+  function clamp(n) { return Math.max(0, Math.min(100, Number.isFinite(n) ? n : 50)); }
+  function round(n) { return Math.round(clamp(n)); }
+  function wAvg(parts) {
+    let t = 0, w = 0;
+    for (const p of parts) { t += p.score * p.weight; w += p.weight; }
+    return w ? clamp(t / w) : 50;
+  }
+
+  // ===== NORMALIZATION =====
+
+  // Percentile rank: rank-based, robust to extreme values
+  // descending=true means higher value → higher score
+  function percentileScore(cities, field, city, descending) {
+    if (descending === undefined) descending = true;
+    const vals = [];
+    for (const c of cities) {
+      const v = getVal(c, field);
+      if (v !== null && Number.isFinite(v)) vals.push(v);
+    }
+    if (vals.length === 0) return 50;
+    const sorted = vals.slice().sort((a, b) => descending ? b - a : a - b);
+    const v = getVal(city, field);
+    if (v === null) return tierMedianScore(cities, field, city, descending);
+    // Find rank (first occurrence for ties)
+    const rank = sorted.indexOf(v);
+    if (rank === -1) return 50;
+    return clamp((sorted.length - 1 - rank) / Math.max(1, sorted.length - 1) * 100);
+  }
+
+  // Positive min-max: higher value → higher score
+  function posScore(cities, field, city) {
+    const v = getVal(city, field);
+    if (v === null) return tierMedianScore(cities, field, city, true);
+    const ext = extremes(cities, field);
+    if (ext.max === ext.min) return 50;
+    return clamp((v - ext.min) / (ext.max - ext.min) * 100);
+  }
+
+  // Negative min-max: lower value → higher score
+  function negScore(cities, field, city) {
+    const v = getVal(city, field);
+    if (v === null) return tierMedianScore(cities, field, city, false);
+    const ext = extremes(cities, field);
+    if (ext.max === ext.min) return 50;
+    return clamp((ext.max - v) / (ext.max - ext.min) * 100);
+  }
+
+  // Square-root min-max: compresses long tails (used for education scale indicators)
+  function sqrtScore(cities, field, city) {
+    const v = getVal(city, field);
+    if (v === null || v === undefined) return tierMedianScore(cities, field, city, true);
+    const all = [];
+    for (const c of cities) {
+      const x = getVal(c, field);
+      if (x !== null && Number.isFinite(x) && x >= 0) all.push(x);
+    }
+    const mxSqrt = all.length ? Math.sqrt(Math.max(...all)) : 0;
+    if (mxSqrt === 0) return 50;
+    return clamp(Math.sqrt(Math.max(0, v)) / mxSqrt * 100);
+  }
+
+  // Rank score: position-based (kept for backward compat, but percentile preferred)
+  function rankScore(cities, field, city, desc) {
+    if (desc === undefined) desc = true;
+    const pairs = [];
+    for (const c of cities) {
+      const v = getVal(c, field);
+      if (v !== null && Number.isFinite(v)) pairs.push({ name: c.name, v });
+    }
+    if (desc) pairs.sort((a, b) => b.v - a.v);
+    else pairs.sort((a, b) => a.v - b.v);
+    const cv = getVal(city, field);
+    const fi = pairs.findIndex(x => x.v === cv);
+    if (fi === -1) return 50;
+    return clamp(100 - (fi / Math.max(1, pairs.length - 1)) * 100);
+  }
+
+  // Per-capita score: value / population, then min-max
+  function perCapitaScore(cities, field, city) {
+    const v = getVal(city, field);
+    const pop = getVal(city, '常住人口');
+    if (v === null || !pop || pop === 0) return 50;
+    const per = v / pop;
+    const all = [];
+    for (const c of cities) {
+      const a = getVal(c, field);
+      const p = getVal(c, '常住人口');
+      if (a !== null && p && p > 0) all.push(a / p);
+    }
+    if (!all.length) return 50;
+    const mn = Math.min(...all), mx = Math.max(...all);
+    if (mx === mn) return 50;
+    return clamp((per - mn) / (mx - mn) * 100);
+  }
+
+  // Blended: 40% rank + 60% per-capita
+  function blendedScore(cities, field, city) {
+    return clamp(0.40 * rankScore(cities, field, city, true) + 0.60 * perCapitaScore(cities, field, city));
+  }
+
+  // Signed null-safe: for indicators that can be negative (e.g., net migration)
+  function nvlSigned(cities, field, city) {
+    const v = getVal(city, field);
+    if (v === null) return 50;
+    const vals = [];
+    for (const c of cities) {
+      const n = getVal(c, field);
+      if (n !== null) vals.push(n);
+    }
+    const mxP = Math.max(...vals, 0);
+    const mnN = Math.min(...vals, 0);
+    if (v >= 0) return clamp(50 + (mxP ? v / mxP * 50 : 0));
+    return clamp(50 - (mnN ? Math.abs(v) / Math.abs(mnN) * 50 : 0));
+  }
+
+  // Hospital reputation score (sqrt-based, range [sqrt(20), sqrt(1400)])
+  function hospRepScore(cities, city) {
+    const raw = getVal(city, '复旦百强加权分') || 0;
+    if (raw <= 0) return 0;
+    return clamp((Math.sqrt(raw) - Math.sqrt(20)) / (Math.sqrt(1400) - Math.sqrt(20)) * 100);
+  }
+
+  // ===== HELPERS =====
+
+  function extremes(cities, field) {
+    let min = Infinity, max = -Infinity;
+    for (const c of cities) {
+      const v = getVal(c, field);
+      if (v !== null && Number.isFinite(v)) {
+        if (v < min) min = v;
+        if (v > max) max = v;
+      }
+    }
+    return { min: isFinite(min) ? min : 0, max: isFinite(max) ? max : 1 };
+  }
+
+  // Tier-based median score for null values
+  function tierMedianScore(cities, field, city, descending) {
+    const level = city.level || '二线';
+    const tierCities = cities.filter(c => (c.level || '二线') === level);
+    const tierVals = [];
+    for (const c of tierCities) {
+      const v = getVal(c, field);
+      if (v !== null && Number.isFinite(v)) tierVals.push(v);
+    }
+    if (tierVals.length === 0) return 50;
+    tierVals.sort((a, b) => descending ? b - a : a - b);
+    const median = tierVals[Math.floor(tierVals.length / 2)];
+    // Score this median against all cities
+    const allVals = [];
+    for (const c of cities) {
+      const v = getVal(c, field);
+      if (v !== null && Number.isFinite(v)) allVals.push(v);
+    }
+    allVals.sort((a, b) => descending ? b - a : a - b);
+    const rank = allVals.indexOf(median);
+    if (rank === -1) return 50;
+    return clamp((allVals.length - 1 - rank) / Math.max(1, allVals.length - 1) * 100);
+  }
+
+  // ===== DIMENSION SCORES =====
+
+  // D1 经济活力 (dual-track: market + state, blended by industry track & system pref)
+  function d1_market(cities, city) {
+    return wAvg([
+      { score: posScore(cities, '人均可支配收入', city), weight: 0.40 },
+      { score: posScore(cities, '人均GDP', city), weight: 0.25 },
+      { score: percentileScore(cities, 'GDP增长率', city, true), weight: 0.15 },
+      { score: sqrtScore(cities, '高新技术企业数量', city), weight: 0.10 },
+      { score: nvlSigned(cities, '高新企业净迁入', city), weight: 0.10 },
+    ]);
+  }
+
+  function d1_state(cities, city) {
+    return wAvg([
+      { score: posScore(cities, '财政自给率', city), weight: 0.30 },
+      { score: sqrtScore(cities, '人均预算支出', city), weight: 0.25 },
+      { score: posScore(cities, '城市行政层级', city), weight: 0.25 },
+      { score: percentileScore(cities, '非私营单位平均工资', city, true), weight: 0.20 },
+    ]);
+  }
+
+  function d1Score(cities, city, state) {
+    const ind = state.industry || INDUSTRIES[0];
+    const mkt = d1_market(cities, city);
+    const stt = d1_state(cities, city);
+    const pref = state.systemPref || 'both';
+
+    if (ind.track === 'mixed') {
+      const w = ind.mixed_w || { state: 0.5, market: 0.5 };
+      const base = stt * w.state + mkt * w.market;
+      if (pref === 'state') return clamp(base * 0.80 + stt * 0.20);
+      if (pref === 'market') return clamp(base * 0.80 + mkt * 0.20);
+      return clamp(base);
+    }
+
+    const blend = TRACK_PREF_BLEND[ind.track];
+    if (!blend) return clamp(mkt);
+    const sw = blend[pref] || blend['both'];
+    return clamp(stt * sw[0] + mkt * sw[1]);
+  }
+
+  // D2 住房可负担性 (percentile rank for uniform distribution)
+  function d2Score(cities, city) {
+    return wAvg([
+      { score: percentileScore(cities, '房价收入比', city, false), weight: 0.45 },
+      { score: percentileScore(cities, '新房均价', city, false), weight: 0.30 },
+      { score: percentileScore(cities, '房租', city, false), weight: 0.25 },
+    ]);
+  }
+
+  // D3 生活便利与活力
+  function d3Score(cities, city) {
+    return wAvg([
+      { score: blendedScore(cities, '咖啡馆数量', city), weight: 0.20 },
+      { score: blendedScore(cities, '电影院数量', city), weight: 0.15 },
+      { score: blendedScore(cities, '运动场馆数量', city), weight: 0.15 },
+      { score: blendedScore(cities, '酒吧数量', city), weight: 0.10 },
+      { score: blendedScore(cities, '购物中心数量', city), weight: 0.15 },
+      { score: blendedScore(cities, '超市便利店数量', city), weight: 0.15 },
+      { score: blendedScore(cities, '餐饮门店数量', city), weight: 0.10 },
+    ]);
+  }
+
+  // D4 医疗健康 (hospital reputation data may be unavailable)
+  function d4Score(cities, city) {
+    const hospRep = hospRepScore(cities, city);
+    if (hospRep > 0) {
+      return wAvg([
+        { score: hospRep, weight: 0.40 },
+        { score: percentileScore(cities, '三甲医院数量', city, true), weight: 0.35 },
+        { score: posScore(cities, '每千人医疗卫生机构床位数', city), weight: 0.15 },
+        { score: percentileScore(cities, '每十万人三甲医院数', city, true), weight: 0.10 },
+      ]);
+    }
+    // No hospital reputation data: redistribute weight proportionally
+    return wAvg([
+      { score: percentileScore(cities, '三甲医院数量', city, true), weight: 0.50 },
+      { score: posScore(cities, '每千人医疗卫生机构床位数', city), weight: 0.30 },
+      { score: percentileScore(cities, '每十万人三甲医院数', city, true), weight: 0.20 },
+    ]);
+  }
+
+  // D5 教育 (persona-aware internal formula switching)
+  function d5_k12Scale(cities, city) {
+    const ms = getVal(city, '普通中学数量'), ps = getVal(city, '普通小学数量');
+    if (ms === null || ps === null) return 50;
+    const avg = (ms + ps) / 2;
+    const all = [];
+    for (const c of cities) {
+      const a = getVal(c, '普通中学数量'), b = getVal(c, '普通小学数量');
+      if (a !== null && b !== null) all.push((a + b) / 2);
+    }
+    const maxSqrt = all.length ? Math.sqrt(Math.max(...all)) : 0;
+    return maxSqrt === 0 ? 50 : clamp(Math.sqrt(Math.max(0, avg)) / maxSqrt * 100);
+  }
+
+  function d5_k12Teacher(cities, city) {
+    const m = getVal(city, '中学生师比'), p = getVal(city, '小学生师比');
+    if (m === null || p === null) return 50;
+    const v = 2 / ((m + p) / 2);
+    const all = [];
+    for (const c of cities) {
+      const a = getVal(c, '中学生师比'), b = getVal(c, '小学生师比');
+      if (a !== null && b !== null) all.push(2 / ((a + b) / 2));
+    }
+    const mn = Math.min(...all), mx = Math.max(...all);
+    return mx === mn ? 50 : clamp((v - mn) / (mx - mn) * 100);
+  }
+
+  function d5_voc(cities, city) { return sqrtScore(cities, '中职学校数', city); }
+
+  function d5Score(cities, city, state) {
+    const p = state.persona || '应届生/单身青年';
+    const K12 = wAvg([
+      { score: d5_k12Scale(cities, city), weight: 0.30 },
+      { score: d5_k12Teacher(cities, city), weight: 0.70 },
+    ]);
+    const VOC = d5_voc(cities, city);
+
+    if (p === '应届生/单身青年') {
+      const HE = wAvg([
+        { score: sqrtScore(cities, '双一流高校数量', city), weight: 0.80 },
+        { score: sqrtScore(cities, '高校在校生', city), weight: 0.20 },
+      ]);
+      return wAvg([{ score: HE, weight: 0.70 }, { score: K12, weight: 0.25 }, { score: VOC, weight: 0.05 }]);
+    } else if (p === '年轻家庭') {
+      const HE = wAvg([
+        { score: sqrtScore(cities, '双一流高校数量', city), weight: 0.60 },
+        { score: sqrtScore(cities, '高校在校生', city), weight: 0.40 },
+      ]);
+      const K12fam = wAvg([
+        { score: d5_k12Scale(cities, city), weight: 0.40 },
+        { score: d5_k12Teacher(cities, city), weight: 0.60 },
+      ]);
+      return wAvg([{ score: HE, weight: 0.35 }, { score: K12fam, weight: 0.60 }, { score: VOC, weight: 0.05 }]);
+    } else {
+      const HE = wAvg([
+        { score: sqrtScore(cities, '双一流高校数量', city), weight: 0.70 },
+        { score: sqrtScore(cities, '高校在校生', city), weight: 0.30 },
+      ]);
+      return wAvg([{ score: HE, weight: 0.55 }, { score: K12, weight: 0.35 }, { score: VOC, weight: 0.10 }]);
+    }
+  }
+
+  // D6 环境与气候
+  function d6Score(cities, city) {
+    return wAvg([
+      { score: negScore(cities, '年均PM2.5', city), weight: 0.40 },
+      { score: posScore(cities, '人均公园绿地面积', city), weight: 0.20 },
+      { score: posScore(cities, '建成区绿化覆盖率', city), weight: 0.15 },
+      { score: negScore(cities, '极端高温天数', city), weight: 0.15 },
+      { score: negScore(cities, '极端低温天数', city), weight: 0.10 },
+    ]);
+  }
+
+  // D7 交通与通勤
+  function d7Score(cities, city) {
+    return wAvg([
+      { score: negScore(cities, '通勤时耗', city), weight: 0.35 },
+      { score: perCapitaScore(cities, '轨交里程', city), weight: 0.25 },
+      { score: posScore(cities, '建成区路网密度', city), weight: 0.15 },
+      { score: posScore(cities, '机场数量', city), weight: 0.10 },
+      { score: percentileScore(cities, '高铁可直达城市数', city, true), weight: 0.15 },
+    ]);
+  }
+
+  // D8 治理与经济基础
+  function d8Score(cities, city) {
+    return wAvg([
+      { score: posScore(cities, '财政自给率', city), weight: 0.50 },
+      { score: percentileScore(cities, '人均预算支出', city, true), weight: 0.30 },
+      { score: posScore(cities, '城市行政层级', city), weight: 0.20 },
+    ]);
+  }
+
+  // ===== 8-DIMENSION CALCULATION =====
+  function calcEightDim(cities, city, state) {
+    return {
+      d1: d1Score(cities, city, state),
+      d2: d2Score(cities, city),
+      d3: d3Score(cities, city),
+      d4: d4Score(cities, city),
+      d5: d5Score(cities, city, state),
+      d6: d6Score(cities, city),
+      d7: d7Score(cities, city),
+      d8: d8Score(cities, city),
+    };
+  }
+
+  // ===== WEIGHT COMPUTATION (3-layer) =====
+
+  function temperamentScores(answers) {
+    const r = {};
+    for (let i = 0; i < QUESTIONS.length; i++) {
+      const q = QUESTIONS[i];
+      const k = answers[q.id];
+      r[q.dim] = k === 'A' ? 100 : k === 'B' ? 0 : 50;
+    }
+    return r;
+  }
+
+  function temperamentDelta(answers) {
+    const s = temperamentScores(answers);
+    const d = [0, 0, 0, 0, 0, 0, 0, 0];
+    const { temperamentHigh: HI, temperamentLow: LO } = SCORING_CONFIG;
+    for (const [dim, cfg] of Object.entries(SCORING_CONFIG.temperament)) {
+      const val = s[dim];
+      if (val === undefined) continue;
+      if (val >= HI && cfg.high) {
+        for (const [idx, delta] of Object.entries(cfg.high)) d[+idx] += delta;
+      } else if (val <= LO && cfg.low) {
+        for (const [idx, delta] of Object.entries(cfg.low)) d[+idx] += delta;
+      }
+    }
+    return d;
+  }
+
+  function mobilityDelta(mobility) {
+    const d = [0, 0, 0, 0, 0, 0, 0, 0];
+    const cfg = SCORING_CONFIG.mobility[mobility];
+    if (cfg) {
+      for (const [idx, delta] of Object.entries(cfg)) d[+idx] += delta;
+    }
+    return d;
+  }
+
+  function computeWeights(persona, answers, mobility) {
+    const w = (PERSONA_WEIGHTS[persona] || PERSONA_WEIGHTS['应届生/单身青年']).slice();
+    const td = temperamentDelta(answers);
+    const md = mobilityDelta(mobility);
+    const { weightFloor, weightCeil } = SCORING_CONFIG;
+    for (let i = 0; i < 8; i++) {
+      w[i] = Math.max(weightFloor, Math.min(weightCeil, w[i] + td[i] + md[i]));
+    }
+    const sum = w.reduce((a, b) => a + b, 0);
+    return w.map(x => x / sum * 100);
+  }
+
+  function calcMatch(dim, weights) {
+    const keys = ['d1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8'];
+    let t = 0, s = 0;
+    for (let i = 0; i < 8; i++) { t += dim[keys[i]] * weights[i]; s += weights[i]; }
+    return clamp(t / s);
+  }
+
+  // ===== RANKING =====
+  function findRegion(province) {
+    for (const [region, provs] of Object.entries(REGIONS)) {
+      if (provs.includes(province)) return region;
+    }
+    return null;
+  }
+
+  function geoBonus(cityName, province, mobility) {
+    if (!province || mobility === 'L3') return 0;
+    const { sameProvince, sameRegion } = SCORING_CONFIG.geo;
+    const cityProv = CITY_PROVINCE[cityName];
+    if (cityProv === province) return sameProvince;
+    // Check if province has any cities in the dataset
+    const provinceHasCities = Object.values(CITY_PROVINCE).some(p => p === province);
+    if (mobility === 'L1' && provinceHasCities) return 0;
+    // Same region bonus (L2 always, L1 only when province has no cities)
+    const userRegion = findRegion(province);
+    const cityRegion = findRegion(cityProv);
+    if (userRegion && cityRegion && userRegion === cityRegion) return sameRegion;
+    return 0;
+  }
+
+  function prepareRanking(cities, state) {
+    const weights = computeWeights(state.persona, state.answers, state.mobility);
+    const ranked = cities.map(city => {
+      const dim = calcEightDim(cities, city, state);
+      return {
+        city,
+        name: city.name,
+        level: city.level || '二线',
+        dims: dim,
+        rawMatch: calcMatch(dim, weights),
+        gdp: getVal(city, 'GDP') || 0,
+        weights,
+      };
+    });
+    // Apply geographic bonus
+    for (const r of ranked) {
+      r.geoBonus = geoBonus(r.name, state.province, state.mobility);
+      r.rawMatch += r.geoBonus;
+    }
+    ranked.sort((a, b) => b.rawMatch - a.rawMatch);
+    // Rescale raw scores to full 0–100 range for meaningful differentiation
+    const rawScores = ranked.map(r => r.rawMatch);
+    const rawMin = Math.min(...rawScores), rawMax = Math.max(...rawScores);
+    const rawRange = rawMax - rawMin || 1;
+    for (const r of ranked) {
+      r.match = clamp((r.rawMatch - rawMin) / rawRange * 90 + 5);
+    }
+    return ranked;
+  }
+
+  function sortRanked(ranked, sortMode) {
+    if (sortMode === 'gdp') ranked.sort((a, b) => b.gdp - a.gdp);
+    else ranked.sort((a, b) => b.match - a.match);
+  }
+
+  // ===== PUBLIC API =====
+  return {
+    clamp, round, wAvg,
+    percentileScore, posScore, negScore, sqrtScore, rankScore,
+    perCapitaScore, blendedScore, nvlSigned, hospRepScore,
+    d1Score, d2Score, d3Score, d4Score, d5Score, d6Score, d7Score, d8Score,
+    calcEightDim, temperamentScores, temperamentDelta, mobilityDelta,
+    computeWeights, calcMatch, prepareRanking, sortRanked,
+    extremes,
+  };
+})();
+
+
+// ===== radar.js =====
+// City Pulse — ECharts Radar Chart
+
+var Radar = window.Radar = (() => {
+  let chart = null;
+  let resizeObserver = null;
+
+  function loadECharts() {
+    return new Promise((resolve, reject) => {
+      if (window.echarts) { resolve(); return; }
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js';
+      s.onload = resolve;
+      s.onerror = () => { console.warn('ECharts CDN load failed'); reject(); };
+      document.head.appendChild(s);
+    });
+  }
+
+  function init(container) {
+    if (!window.echarts) return;
+    if (!chart) {
+      chart = echarts.init(container);
+      if (window.ResizeObserver) {
+        resizeObserver = new ResizeObserver(() => { if (chart) chart.resize(); });
+        resizeObserver.observe(container);
+      }
+    }
+  }
+
+  function isDark() {
+    return document.documentElement.getAttribute('data-theme') === 'dark';
+  }
+
+  function render(items) {
+    if (!chart) return;
+    const colors = ['#ff385c', '#00a699', '#ff8c42', '#428bff'];
+    const dark = isDark();
+    const text = dark ? '#e0e0e0' : '#222';
+    const line = dark ? '#444' : '#ddd';
+    const splitLine = dark ? '#3a3a3a' : '#ebebeb';
+    const area = dark ? ['#1a1a1a', '#2a2a2a'] : ['#fff', '#f7f7f7'];
+    const option = {
+      color: colors,
+      backgroundColor: 'transparent',
+      tooltip: { trigger: 'item' },
+      legend: { show: items.length > 1, bottom: 0, textStyle: { color: text, fontSize: 12 } },
+      radar: {
+        center: ['50%', '47%'], radius: '62%', splitNumber: 4,
+        indicator: DIMENSIONS.map(d => ({ name: d.label, max: 100 })),
+        axisName: { color: text, fontSize: 12 },
+        axisLine: { lineStyle: { color: line } },
+        splitLine: { lineStyle: { color: splitLine } },
+        splitArea: { areaStyle: { color: area } },
+      },
+      series: [{
+        type: 'radar', symbol: 'circle', symbolSize: 4,
+        animationDuration: 300, animationEasing: 'cubicOut',
+        data: items.map((item, idx) => ({
+          name: item.name,
+          value: DIMENSIONS.map(d => Scoring.round(item.dims[d.key])),
+          areaStyle: { opacity: dark ? 0.2 : 0.12 },
+          lineStyle: { width: 2, color: colors[idx % colors.length] },
+          itemStyle: { color: colors[idx % colors.length] },
+        })),
+      }],
+    };
+    chart.setOption(option, true);
+  }
+
+  function resize() {
+    if (chart) chart.resize();
+  }
+
+  function dispose() {
+    if (resizeObserver) resizeObserver.disconnect();
+    if (chart) chart.dispose();
+    chart = null;
+  }
+
+  return { loadECharts, init, render, resize, dispose };
+})();
+
+
+// ===== render.js =====
+// City Pulse — DOM Rendering
+
+var Render = window.Render = (() => {
+  const { esc, round, scoreClass } = {
+    esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); },
+    round(n) { return Math.round(Scoring.clamp(n)); },
+    scoreClass(s) { return s >= 80 ? 'good' : s >= 60 ? 'mid' : 'low'; },
+  };
+
+  function $(id) { return document.getElementById(id); }
+
+  // ===== DIMENSION INTERPRETATION =====
+  // Returns { text, icon } for a dimension score, using actual indicator values for context
+  function dimInterp(dimKey, score, city) {
+    const getVal = DataAccess.getVal;
+    const s = round(score);
+    switch (dimKey) {
+      case 'd1': {
+        const inc = getVal(city, '人均可支配收入');
+        if (s >= 80) return { text: '经济强劲，收入水平领先', icon: '▲' };
+        if (s >= 60) return { text: '经济活跃，发展态势良好', icon: '●' };
+        if (s >= 40) return { text: '经济体量中等', icon: '●' };
+        return { text: '经济基础较薄弱', icon: '▼' };
+      }
+      case 'd2': {
+        const pir = getVal(city, '房价收入比');
+        const pirText = pir !== null ? '房价收入比' + pir.toFixed(1) + '倍' : '';
+        if (s >= 80) return { text: '住房非常可负担' + (pirText ? '，' + pirText : ''), icon: '▲' };
+        if (s >= 60) return { text: '房价适中，压力可控' + (pirText ? '，' + pirText : ''), icon: '●' };
+        if (s >= 40) return { text: '房价偏高，有一定压力' + (pirText ? '，' + pirText : ''), icon: '▼' };
+        if (s >= 20) return { text: '房价较高，置业压力大' + (pirText ? '，' + pirText : ''), icon: '▼' };
+        return { text: '房价极高，置业非常困难' + (pirText ? '，' + pirText : ''), icon: '▼' };
+      }
+      case 'd3': {
+        if (s >= 70) return { text: '商业配套丰富，生活便利度高', icon: '▲' };
+        if (s >= 50) return { text: '配套较完善，日常需求可满足', icon: '●' };
+        if (s >= 30) return { text: '商业配套一般', icon: '●' };
+        return { text: '商业配套较少，便利度有限', icon: '▼' };
+      }
+      case 'd4': {
+        const beds = getVal(city, '每千人医疗卫生机构床位数');
+        if (s >= 70) return { text: '医疗资源优质丰富' + (beds ? '，每千人' + beds.toFixed(1) + '张床位' : ''), icon: '▲' };
+        if (s >= 50) return { text: '医疗条件较好' + (beds ? '，每千人' + beds.toFixed(1) + '张床位' : ''), icon: '●' };
+        if (s >= 30) return { text: '医疗资源一般' + (beds ? '，每千人' + beds.toFixed(1) + '张床位' : ''), icon: '●' };
+        return { text: '医疗资源相对不足' + (beds ? '，每千人' + beds.toFixed(1) + '张床位' : ''), icon: '▼' };
+      }
+      case 'd5': {
+        if (s >= 70) return { text: '教育资源优质，高校/基础教育突出', icon: '▲' };
+        if (s >= 50) return { text: '教育水平中上', icon: '●' };
+        if (s >= 30) return { text: '教育资源一般', icon: '●' };
+        return { text: '教育资源相对匮乏', icon: '▼' };
+      }
+      case 'd6': {
+        const pm = getVal(city, '年均PM2.5');
+        if (s >= 70) return { text: '环境优良' + (pm ? '，PM2.5仅' + pm + 'μg/m³' : ''), icon: '▲' };
+        if (s >= 50) return { text: '环境尚可' + (pm ? '，PM2.5为' + pm + 'μg/m³' : ''), icon: '●' };
+        if (s >= 30) return { text: '环境一般' + (pm ? '，PM2.5达' + pm + 'μg/m³' : ''), icon: '▼' };
+        return { text: '环境较差' + (pm ? '，PM2.5达' + pm + 'μg/m³' : ''), icon: '▼' };
+      }
+      case 'd7': {
+        const commute = getVal(city, '通勤时耗');
+        if (s >= 60) return { text: '交通便利，通勤体验好' + (commute ? '，平均' + commute.toFixed(0) + '分钟' : ''), icon: '▲' };
+        if (s >= 45) return { text: '交通条件中等' + (commute ? '，平均' + commute.toFixed(0) + '分钟' : ''), icon: '●' };
+        return { text: '通勤压力较大' + (commute ? '，平均' + commute.toFixed(0) + '分钟' : ''), icon: '▼' };
+      }
+      case 'd8': {
+        if (s >= 70) return { text: '财政充裕，公共服务保障好', icon: '▲' };
+        if (s >= 50) return { text: '治理基础尚可', icon: '●' };
+        if (s >= 30) return { text: '财政压力中等', icon: '●' };
+        return { text: '财政压力较大，公共服务受限', icon: '▼' };
+      }
+      default: return { text: '', icon: '' };
+    }
+  }
+
+  // Get top strengths and weaknesses for a city
+  function cityTags(dims) {
+    const keys = ['d1','d2','d3','d4','d5','d6','d7','d8'];
+    const labels = { d1:'经济',d2:'住房',d3:'生活',d4:'医疗',d5:'教育',d6:'环境',d7:'交通',d8:'治理' };
+    const entries = keys.map(k => ({ key: k, label: labels[k], score: dims[k] }));
+    entries.sort((a, b) => b.score - a.score);
+    const strengths = entries.slice(0, 2).filter(e => e.score >= 55);
+    const weaknesses = entries.slice(-2).filter(e => e.score < 40);
+    return { strengths, weaknesses };
+  }
+
+  // ===== STEP BAR =====
+  function renderStepBar() {
+    const labels = ['选择行业', '选择身份', '选择省份', '气质测试', '流动性'];
+    $('stepBar').innerHTML = labels.map((l, i) =>
+      `<div class="step-item" data-step="${i + 1}"><span class="step-num">${i + 1}</span><span>${l}</span></div>`
+    ).join('');
+  }
+
+  function setStep(s) {
+    for (let i = 1; i <= 5; i++) $('panel' + i).classList.toggle('is-active', i === s);
+    document.querySelectorAll('.step-item').forEach(item => {
+      const n = +item.getAttribute('data-step');
+      item.classList.toggle('is-active', n === s);
+      item.classList.toggle('is-done', n < s);
+    });
+  }
+
+  // ===== PANEL 1: SYSTEM PREF + INDUSTRY =====
+  function renderSystemPrefs(systemPref) {
+    $('systemPrefGroup').innerHTML = SYSTEM_PREFS.map(sp =>
+      `<button class="pref-option ${systemPref === sp.key ? 'is-selected' : ''}" data-syspref="${sp.key}">
+        <span class="pref-label">${esc(sp.label)}</span>
+        <span class="pref-desc">${esc(sp.desc)}</span>
+      </button>`
+    ).join('');
+  }
+
+  function renderIndustries(selectedId) {
+    $('industryGrid').innerHTML = INDUSTRIES.map(ind =>
+      `<button class="choice-card ${selectedId === ind.id ? 'is-selected' : ''}" data-industry="${ind.id}">
+        <div class="choice-title"><span>${esc(ind.name)}</span></div>
+      </button>`
+    ).join('');
+  }
+
+  // ===== PANEL 2: PERSONA =====
+  function renderPersonas(selected) {
+    $('personaGrid').innerHTML = PERSONAS.map(p =>
+      `<button class="choice-card persona-card ${selected === p.key ? 'is-selected' : ''}" data-persona="${esc(p.key)}">
+        <span class="persona-icon">${p.icon}</span>
+        <div class="choice-title"><span>${esc(p.key)}</span></div>
+        <div class="choice-meta">${esc(p.text)}</div>
+      </button>`
+    ).join('');
+  }
+
+  // ===== PANEL 3: QUESTIONS =====
+  function renderQuestion(qi, answers) {
+    const q = QUESTIONS[qi];
+    const sel = answers[q.id];
+    $('questionHost').innerHTML = `
+      <div class="question-card">
+        <div class="question-top">
+          <span class="eyebrow">${esc(q.id)} · ${esc(q.name)}</span>
+          <span class="question-progress">${qi + 1}/${QUESTIONS.length}</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width:${(qi + 1) / QUESTIONS.length * 100}%"></div></div>
+        <div class="question-text">${esc(q.q)}</div>
+        <div class="answer-list">
+          ${['A', 'B', 'C'].map(k =>
+            `<button class="answer-card ${sel === k ? 'is-selected' : ''}" data-answer="${k}">
+              <span class="answer-key">${k}</span><span>${esc(q.answers[k])}</span>
+            </button>`
+          ).join('')}
+        </div>
+      </div>`;
+    $('questionNext').disabled = !sel;
+    $('questionNext').textContent = qi === QUESTIONS.length - 1 ? '完成' : '下一题';
+  }
+
+  // ===== PANEL 3: PROVINCE =====
+  function renderProvinces(selected) {
+    const cityProvs = new Set(Object.values(CITY_PROVINCE));
+    const html = Object.entries(REGIONS).map(([region, provs]) => {
+      const items = provs.filter(p => PROVINCES.includes(p)).map(p => {
+        const sel = selected === p;
+        return `<button class="prov-btn ${sel ? 'is-selected' : ''}" data-province="${esc(p)}">${esc(p)}</button>`;
+      }).join('');
+      return `<div class="prov-region"><div class="prov-region-label">${esc(region)}</div><div class="prov-row">${items}</div></div>`;
+    }).join('');
+    $('provinceGrid').innerHTML = html;
+    if (selected && !cityProvs.has(selected)) {
+      $('provinceHint').innerHTML = '<span class="prov-hint-text">所选省份暂无覆盖城市，将以同区域城市为你匹配。后续版本将加入更多城市。</span>';
+    } else {
+      $('provinceHint').innerHTML = '';
+    }
+  }
+  function renderMobility(selected) {
+    $('mobilityGrid').innerHTML = MOBILITY.map(m =>
+      `<button class="choice-card ${selected === m.key ? 'is-selected' : ''}" data-mobility="${m.key}">
+        <div class="choice-title"><span>${esc(m.name)}</span></div>
+        <div class="choice-meta">${esc(m.desc)}</div>
+      </button>`
+    ).join('');
+  }
+
+  // ===== RESULTS SUMMARY =====
+  function renderSummary(state) {
+    const tags = App.temperamentTags();
+    $('resultLead').textContent = state.persona + ' · ' + state.industry.name + ' · ' + (state.province || '') + ' · ' + state.mobility;
+    const chips = [
+      `<span class="chip primary">${esc(state.persona)}</span>`,
+      `<span class="chip">${esc(state.industry.name)}</span>`,
+    ].concat(tags.map(t => `<span class="chip">${esc(t.text)}</span>`)).join('');
+    $('summaryChips').innerHTML = chips;
+    $('mobileTags').innerHTML = `<span class="chip primary">${esc(state.persona)}</span><span class="chip">${esc(state.industry.name)}</span>`;
+  }
+
+  // ===== RANK LIST (sidebar) =====
+  function renderRankList(ranked, activeCity) {
+    $('rankList').innerHTML = ranked.map(item =>
+      `<button class="rank-row ${item.name === activeCity ? 'is-active' : ''}" data-name="${esc(item.name)}">
+        <span class="level-dot level-${esc(item.level)}"></span>
+        <span class="rank-city">${esc(item.name)}</span>
+        <span class="score ${scoreClass(item.match)}">${round(item.match)}</span>
+      </button>`
+    ).join('');
+  }
+
+  // ===== CITY CARDS =====
+  function dimMini(item) {
+    return DIMENSIONS.map(d =>
+      `<span class="mini-bar" style="height:${Math.max(5, round(item.dims[d.key]) * 0.32)}px"></span>`
+    ).join('');
+  }
+
+  function renderCityCards(ranked, activeCity, compare, sortMode) {
+    $('cityCards').innerHTML = ranked.map((item, idx) => {
+      const sel = compare.indexOf(item.name) >= 0;
+      const tags = cityTags(item.dims);
+      const tagLine = tags.strengths.map(t => `<span class="tag-good">${esc(t.label)}</span>`).join('')
+        + tags.weaknesses.map(t => `<span class="tag-weak">${esc(t.label)}</span>`).join('');
+      return `<article class="city-card-row ${item.name === activeCity ? 'is-active' : ''}" data-name="${esc(item.name)}">
+        <button class="rank-no">${idx + 1}</button>
+        <div>
+          <div class="city-main-name"><span class="level-dot level-${esc(item.level)}"></span><span>${esc(item.name)}</span></div>
+          <div class="city-sub">${esc(item.level)} · ${sortMode === 'gdp' ? 'GDP ' + Math.round(item.gdp) + '亿' : '匹配度 ' + round(item.match)}${tagLine ? ' · ' + tagLine : ''}</div>
+        </div>
+        <div class="score ${scoreClass(item.match)}">${round(item.match)}</div>
+        <div class="mini-dims">${dimMini(item)}</div>
+        <div class="row-actions">
+          <button class="small-btn compare-btn ${sel ? 'is-selected' : ''}" data-compare="${esc(item.name)}">${sel ? '已对比' : '对比'}</button>
+          <button class="small-btn detail-btn" data-detail="${esc(item.name)}">详情</button>
+        </div>
+      </article>`;
+    }).join('');
+  }
+
+  // ===== DETAIL PANEL =====
+  function formatField(city, field) {
+    const ind = DataAccess.getIndicator(city, field);
+    if (!ind) return '<span class="field-value empty">暂无数据</span>';
+    const v = ind.value;
+    const unit = ind.unit || '';
+    const year = ind.year ? `<span class="yr">${esc(ind.year)}</span>` : '';
+    return `<span class="field-value">${esc(Number.isInteger(v) ? v : v.toFixed(2))} ${esc(unit)}${year}</span>`;
+  }
+
+  function renderDetail(item, persona) {
+    const bars = DIMENSIONS.map(d => {
+      const s = round(item.dims[d.key]);
+      const cls = s >= 80 ? 'green' : s >= 60 ? 'yellow' : 'red';
+      const interp = dimInterp(d.key, item.dims[d.key], item.city);
+      return `<div class="dim-row"><span class="dim-label">${esc(d.label)}</span><span class="dim-track"><span class="dim-fill ${cls}" style="width:${s}%"></span></span><span class="score ${scoreClass(s)}">${s}</span></div><div class="dim-interp"><span class="dim-interp-icon ${s >= 60 ? 'good' : s >= 40 ? 'mid' : 'low'}">${interp.icon}</span>${esc(interp.text)}</div>`;
+    }).join('');
+
+    const priority = PRIORITIES[persona] || [];
+    const fields = DETAIL_FIELDS.slice().sort((a, b) => {
+      let ai = priority.indexOf(a), bi = priority.indexOf(b);
+      ai = ai < 0 ? 99 : ai; bi = bi < 0 ? 99 : bi;
+      return ai - bi;
+    }).map(field => {
+      const desc = FIELD_LABELS[field] || '城市公开指标';
+      return `<div class="field-item"><div class="field-top"><span class="field-name">${esc(field)}</span>${formatField(item.city, field)}</div><div class="field-desc">${esc(desc)}</div></div>`;
+    }).join('');
+
+    const temp = App.temperamentTags().map(t => `<span class="chip">${esc(t.text)}</span>`).join('');
+
+    $('detailInner').innerHTML = `
+      <div class="detail-head">
+        <div>
+          <div class="detail-title">${esc(item.name)}</div>
+          <div class="detail-score score ${scoreClass(item.match)}">${round(item.match)}</div>
+          <div class="chips"><span class="chip primary">${esc(item.level)}</span>${temp}</div>
+        </div>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="detail-section"><h3>8 维得分</h3>${bars}</div>
+      <div class="detail-section"><h3>全部指标</h3><div class="field-list">${fields}</div></div>`;
+    $('detailInner').querySelector('.close-btn').onclick = () => App.closeDetail();
+  }
+
+  function openDetail(name, ranked, persona) {
+    const item = ranked.find(r => r.name === name);
+    if (!item) return;
+    renderDetail(item, persona);
+    $('resultsGrid').classList.add('detail-open');
+    $('detailPanel').setAttribute('aria-hidden', 'false');
+  }
+
+  function closeDetail() {
+    $('resultsGrid').classList.remove('detail-open');
+    $('detailPanel').setAttribute('aria-hidden', 'true');
+  }
+
+  // ===== TOAST =====
+  let toastTimer = null;
+  function toast(m) {
+    const el = $('toast');
+    el.textContent = m;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
+  }
+
+  return {
+    $, esc, scoreClass, toast, dimInterp, cityTags,
+    renderStepBar, setStep, renderSystemPrefs, renderIndustries,
+    renderPersonas, renderProvinces, renderQuestion, renderMobility,
+    renderSummary, renderRankList, renderCityCards,
+    renderDetail, openDetail, closeDetail,
+  };
+})();
+
+
+// ===== app.js =====
+// City Pulse — Application State & Event Binding
+
+var App = window.App = (() => {
+  const $ = Render.$;
+
+  // ===== STATE =====
+  const state = {
+    step: 1,
+    industry: null,
+    systemPref: 'both',
+    persona: null,
+    province: null,
+    questionIndex: 0,
+    answers: {},
+    mobility: null,
+    cities: [],
+    ranked: [],
+    sortMode: 'match',
+    activeCity: null,
+    compare: [],
+  };
+
+  // ===== INIT =====
+  function init() {
+    if (!DataAccess.init()) {
+      Render.toast('数据加载失败，请确认 city-pulse-data.js');
+      return;
+    }
+    state.cities = DataAccess.getCities();
+    if (!state.cities.length) {
+      Render.toast('数据加载失败');
+      return;
+    }
+    Render.renderStepBar();
+    Render.renderSystemPrefs(state.systemPref);
+    Render.renderIndustries(null);
+    Render.renderPersonas(null);
+    Render.renderProvinces(null);
+    Render.renderQuestion(0, state.answers);
+    Render.renderMobility(null);
+    bindEvents();
+    initTheme();
+    Render.setStep(1);
+  }
+
+  // ===== EVENT DELEGATION =====
+  function bindEvents() {
+    document.addEventListener('click', handleClick);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') Render.closeDetail(); });
+    window.addEventListener('resize', () => Radar.resize());
+  }
+
+  function handleClick(e) {
+    const target = e.target;
+
+    // System pref
+    const syspref = target.closest('[data-syspref]');
+    if (syspref) { selectSystemPref(syspref.getAttribute('data-syspref')); return; }
+
+    // Industry
+    const industry = target.closest('[data-industry]');
+    if (industry) { selectIndustry(+industry.getAttribute('data-industry')); return; }
+
+    // Persona
+    const persona = target.closest('[data-persona]');
+    if (persona) { selectPersona(persona.getAttribute('data-persona')); return; }
+
+    // Province
+    const province = target.closest('[data-province]');
+    if (province && !province.disabled) { selectProvince(province.getAttribute('data-province')); return; }
+
+    // Answer
+    const answer = target.closest('[data-answer]');
+    if (answer) { answerQuestion(answer.getAttribute('data-answer')); return; }
+
+    // Mobility
+    const mobility = target.closest('[data-mobility]');
+    if (mobility) { selectMobility(mobility.getAttribute('data-mobility')); return; }
+
+    // Navigation buttons
+    if (target.id === 'industryNext') { setStep(2); return; }
+    if (target.id === 'personaNext') { setStep(3); return; }
+    if (target.id === 'provinceNext') { setStep(4); return; }
+    if (target.id === 'questionNext') { nextQuestion(); return; }
+    if (target.id === 'questionBack') { backQuestion(); return; }
+    if (target.id === 'matchBtn') { goMatch(); return; }
+    if (target.id === 'modifyBtn' || target.id === 'mobileModify') { returnAssessment(); return; }
+    if (target.id === 'sortMatch') { setSortMode('match'); return; }
+    if (target.id === 'sortGdp') { setSortMode('gdp'); return; }
+
+    // Back buttons
+    const back = target.closest('[data-back]');
+    if (back) { setStep(+back.getAttribute('data-back')); return; }
+
+    // City row click (not on buttons)
+    const row = target.closest('.city-card-row');
+    if (row && !target.closest('.compare-btn') && !target.closest('.detail-btn') && !target.closest('.rank-no')) {
+      selectCity(row.getAttribute('data-name'));
+      return;
+    }
+    const rankNo = target.closest('.rank-no');
+    if (rankNo) {
+      selectCity(rankNo.closest('.city-card-row').getAttribute('data-name'));
+      return;
+    }
+
+    // Compare button
+    const compareBtn = target.closest('[data-compare]');
+    if (compareBtn) { toggleCompare(compareBtn.getAttribute('data-compare')); return; }
+
+    // Detail button
+    const detailBtn = target.closest('[data-detail]');
+    if (detailBtn) { openDetailByName(detailBtn.getAttribute('data-detail')); return; }
+
+    // Rank list item
+    const rankRow = target.closest('.rank-row');
+    if (rankRow) { selectCity(rankRow.getAttribute('data-name')); return; }
+  }
+
+  // ===== NAVIGATION =====
+  function scrollToAssessment() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function setStep(s) {
+    state.step = s;
+    Render.setStep(s);
+    scrollToAssessment();
+  }
+
+  // ===== SELECTIONS =====
+  function selectSystemPref(key) {
+    state.systemPref = key;
+    Render.renderSystemPrefs(key);
+  }
+
+  function selectIndustry(id) {
+    state.industry = INDUSTRIES.find(i => i.id === id);
+    $('industryNext').disabled = false;
+    $('industryHint').textContent = '已选择：' + state.industry.name;
+    Render.renderIndustries(id);
+  }
+
+  function selectPersona(key) {
+    state.persona = key;
+    $('personaNext').disabled = false;
+    Render.renderPersonas(key);
+  }
+
+  function selectProvince(key) {
+    state.province = key;
+    $('provinceNext').disabled = false;
+    Render.renderProvinces(key);
+  }
+
+  function answerQuestion(key) {
+    state.answers[QUESTIONS[state.questionIndex].id] = key;
+    Render.renderQuestion(state.questionIndex, state.answers);
+  }
+
+  function nextQuestion() {
+    if (!state.answers[QUESTIONS[state.questionIndex].id]) return;
+    if (state.questionIndex < QUESTIONS.length - 1) {
+      state.questionIndex++;
+      Render.renderQuestion(state.questionIndex, state.answers);
+      scrollToAssessment();
+    } else {
+      setStep(5);
+    }
+  }
+
+  function backQuestion() {
+    if (state.questionIndex > 0) {
+      state.questionIndex--;
+      Render.renderQuestion(state.questionIndex, state.answers);
+      scrollToAssessment();
+    } else {
+      setStep(3);
+    }
+  }
+
+  function selectMobility(key) {
+    state.mobility = key;
+    $('matchBtn').classList.remove('hidden');
+    Render.renderMobility(key);
+  }
+
+  // ===== MATCH =====
+  function goMatch() {
+    if (!state.cities.length) { Render.toast('数据加载失败'); return; }
+    if (!state.industry || !state.persona || !state.mobility) { Render.toast('请先完成测评'); return; }
+    try {
+      state.ranked = Scoring.prepareRanking(state.cities, state);
+      state.activeCity = state.ranked[0] ? state.ranked[0].name : null;
+      state.compare = [];
+      $('assessment').classList.add('hidden');
+      $('results').classList.remove('hidden');
+      renderResults();
+      setTimeout(() => {
+        Radar.init($('radarChart'));
+        renderRadar();
+      }, 50);
+    } catch (e) {
+      console.error(e);
+      Render.toast('匹配计算失败');
+    }
+  }
+
+  function renderResults() {
+    Render.renderSummary(state);
+    renderLists();
+    renderRadar();
+  }
+
+  function renderLists() {
+    Render.renderRankList(state.ranked, state.activeCity);
+    Render.renderCityCards(state.ranked, state.activeCity, state.compare, state.sortMode);
+    $('rankList').querySelectorAll('.rank-row').forEach(row => {
+      row.onclick = () => selectCity(row.getAttribute('data-name'));
+    });
+  }
+
+  function selectCity(name) {
+    state.activeCity = name;
+    state.compare = [];
+    renderLists();
+    renderRadar();
+    if ($('resultsGrid').classList.contains('detail-open')) {
+      Render.openDetail(name, state.ranked, state.persona);
+      $('detailInner').scrollTop = 0;
+    }
+  }
+
+  function toggleCompare(name) {
+    const i = state.compare.indexOf(name);
+    if (i >= 0) state.compare.splice(i, 1);
+    else {
+      if (state.compare.length >= 4) { Render.toast('最多对比4座城市'); return; }
+      state.compare.push(name);
+    }
+    state.activeCity = name;
+    renderLists();
+    renderRadar();
+  }
+
+  function setSortMode(mode) {
+    if (state.sortMode === mode) return;
+    state.sortMode = mode;
+    $('sortMatch').classList.toggle('is-active', mode === 'match');
+    $('sortGdp').classList.toggle('is-active', mode === 'gdp');
+    Scoring.sortRanked(state.ranked, mode);
+    renderLists();
+    $('rankList').scrollTop = 0;
+    $('cityCards').scrollTop = 0;
+  }
+
+  function openDetailByName(name) {
+    state.activeCity = name;
+    renderLists();
+    Render.openDetail(name, state.ranked, state.persona);
+    $('detailInner').scrollTop = 0;
+    renderRadar();
+  }
+
+  function closeDetail() {
+    Render.closeDetail();
+  }
+
+  function returnAssessment() {
+    closeDetail();
+    $('results').classList.add('hidden');
+    $('assessment').classList.remove('hidden');
+    setStep(1);
+    setTimeout(() => $('assessment').scrollIntoView({ behavior: 'smooth', block: 'start' }), 20);
+  }
+
+  function renderRadar() {
+    const names = state.compare.length ? state.compare : (state.activeCity ? [state.activeCity] : []);
+    const items = names.map(n => state.ranked.find(x => x.name === n)).filter(Boolean);
+    Radar.render(items);
+  }
+
+  // ===== TEMPERAMENT HELPERS =====
+  function temperamentTags() {
+    const scores = {};
+    for (let i = 0; i < QUESTIONS.length; i++) {
+      const q = QUESTIONS[i];
+      const k = state.answers[q.id];
+      scores[q.dim] = k === 'A' ? 100 : k === 'B' ? 0 : 50;
+    }
+    return QUESTIONS.map(q => {
+      const s = scores[q.dim];
+      const label = s >= 50 ? q.a : q.b;
+      return { label: label, text: label, score: s, diff: Math.abs(s - 50) };
+    }).filter(t => t.score !== 50).sort((a, b) => b.diff - a.diff).slice(0, 3);
+  }
+
+  // ===== THEME =====
+  function initTheme() {
+    const saved = localStorage.getItem('city-pulse-theme');
+    if (saved) {
+      setTheme(saved);
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      setTheme('dark');
+    }
+    $('themeBtn').onclick = () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      setTheme(current === 'dark' ? 'light' : 'dark');
+    };
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      if (!localStorage.getItem('city-pulse-theme')) {
+        setTheme(e.matches ? 'dark' : 'light');
+      }
+    });
+  }
+
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('city-pulse-theme', theme);
+    if (state.ranked.length) renderRadar();
+  }
+
+  return { init, state, temperamentTags, closeDetail, selectCity };
+})();
+
+// ===== BOOT =====
+document.addEventListener('DOMContentLoaded', () => {
+  App.init();
+  Radar.loadECharts().then(() => {
+    if (App.state.ranked.length) {
+      Radar.init(document.getElementById('radarChart'));
+    }
+  }).catch(() => {});
+});
+
+</script>
+</body>
+</html>

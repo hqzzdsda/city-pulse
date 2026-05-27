@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+node_modules/
+archive/
+
+# docs/ and city-pulse-data.js are intentionally tracked —
+# GitHub Pages serves from /docs, the data file is a runtime dependency

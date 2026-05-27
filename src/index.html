@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>城市脉搏 City Pulse</title>
+  <script>(function(){var t=localStorage.getItem('city-pulse-theme');if(t)document.documentElement.setAttribute('data-theme',t);else if(matchMedia('(prefers-color-scheme:dark)').matches)document.documentElement.setAttribute('data-theme','dark');})();</script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *:focus { outline: none; }
+    *:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+    :root {
+      --primary: #ff385c; --primary-active: #e00b41;
+      --canvas: #ffffff; --surface: #f7f7f7; --ink: #222222; --body: #3f3f3f;
+      --muted: #6a6a6a; --muted-soft: #929292; --line: #dddddd; --line-soft: #ebebeb;
+      --green: #00a699;
+      --font: 'Airbnb Cereal VF', Circular, -apple-system, system-ui, Roboto, 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-full: 9999px;
+      color-scheme: light dark;
+    }
+    [data-theme="dark"] {
+      --canvas: #1a1a1a; --surface: #2a2a2a;
+      --ink: #f0f0f0; --body: #d0d0d0; --muted: #999999; --muted-soft: #666666;
+      --line: #3a3a3a; --line-soft: #2a2a2a;
+    }
+    html { scroll-behavior: smooth; }
+    html, body { height: auto; }
+    body { font-family: var(--font); background: var(--canvas); color: var(--ink); }
+
+    /* Topbar */
+    .topbar { height: 72px; border-bottom: 1px solid var(--line-soft); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; background: var(--canvas); position: sticky; top: 0; z-index: 10; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 22px; color: var(--primary); }
+    .brand-mark { width: 36px; height: 36px; border-radius: var(--r-full); display: grid; place-items: center; background: var(--primary); color: #fff; font-size: 20px; }
+    .top-right { display: flex; align-items: center; gap: 12px; }
+    .top-meta { color: var(--muted); font-size: 14px; }
+    .theme-btn { width: 36px; height: 36px; border-radius: var(--r-full); background: var(--surface); color: var(--muted); font-size: 18px; display: grid; place-items: center; border: 0; cursor: pointer; transition: background 200ms, color 200ms; }
+    .theme-btn:hover { background: var(--line-soft); color: var(--ink); }
+    .theme-btn .icon-sun { display: block; }
+    .theme-btn .icon-moon { display: none; }
+    [data-theme="dark"] .theme-btn .icon-sun { display: none; }
+    [data-theme="dark"] .theme-btn .icon-moon { display: block; }
+
+    /* Hero */
+    .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+    .hero-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+    .hero-glow { position: absolute; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(255,56,92,0.08) 0%, transparent 70%); top: 50%; left: 50%; transform: translate(-50%, -60%); z-index: 1; }
+    [data-theme="dark"] .hero-glow { background: radial-gradient(circle, rgba(255,56,92,0.12) 0%, transparent 70%); }
+
+    /* Scrolling skyline */
+    .skyline-track { position: absolute; bottom: 0; left: 0; display: flex; width: max-content; }
+    .skyline-track svg { flex-shrink: 0; height: 80vh; width: 1440px; }
+    .skyline-far .skyline-track { animation: scrollFar 120s linear infinite; opacity: 0.06; }
+    .skyline-near .skyline-track { animation: scrollNear 80s linear infinite; opacity: 0.10; }
+    [data-theme="dark"] .skyline-far .skyline-track { opacity: 0.08; }
+    [data-theme="dark"] .skyline-near .skyline-track { opacity: 0.14; }
+    @keyframes scrollFar { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    @keyframes scrollNear { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    /* Content */
+    .hero-content { position: relative; z-index: 2; text-align: center; max-width: 640px; padding: 0 24px; }
+    h1 { font-size: 58px; line-height: 1.15; font-weight: 750; letter-spacing: -0.5px; margin-bottom: 20px; }
+    h1 .accent { color: var(--primary); }
+    .hero-lead { font-size: 20px; line-height: 1.6; color: var(--muted); margin-bottom: 40px; max-width: 500px; margin-left: auto; margin-right: auto; }
+    .hero-actions { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
+    .btn { height: 56px; border-radius: var(--r-sm); padding: 0 36px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 650; font-size: 18px; border: 0; cursor: pointer; text-decoration: none; transition: background 200ms, transform 200ms, box-shadow 200ms; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-active); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,56,92,0.3); }
+    .btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+    .btn-ghost:hover { background: var(--surface); border-color: var(--ink); }
+
+    /* Stats */
+    .hero-stats { display: flex; align-items: center; justify-content: center; gap: 40px; margin-top: 56px; }
+    .stat { text-align: center; }
+    .stat-num { font-size: 36px; font-weight: 750; color: var(--ink); }
+    .stat-label { font-size: 14px; color: var(--muted); margin-top: 4px; }
+
+    /* Responsive */
+    @media (max-width: 744px) {
+      .topbar { height: 60px; padding: 0 16px; }
+      .top-meta { display: none; }
+      .brand { font-size: 20px; }
+      h1 { font-size: 38px; }
+      .hero-lead { font-size: 16px; }
+      .hero-stats { gap: 24px; }
+      .stat-num { font-size: 28px; }
+      .btn { height: 52px; font-size: 16px; padding: 0 28px; }
+      .hero-glow { width: 360px; height: 360px; }
+      .about { padding: 80px 20px; }
+      .about-inner { max-width: 600px; }
+      .step-grid { grid-template-columns: 1fr; }
+      .dim-grid { grid-template-columns: 1fr; }
+      .about-tagline { font-size: 30px; }
+    }
+
+    /* About */
+    .about { padding: 100px 32px; background: var(--surface); }
+    .about-inner { max-width: 720px; margin: 0 auto; }
+    .about-tagline { font-size: 36px; font-weight: 750; line-height: 1.3; text-align: center; margin-bottom: 12px; }
+    .about-tagline .accent { color: var(--primary); }
+    .about-sub { text-align: center; font-size: 18px; color: var(--muted); margin-bottom: 64px; }
+
+    .about-section { margin-bottom: 56px; }
+    .about-section h2 { font-size: 22px; font-weight: 700; margin-bottom: 24px; color: var(--ink); }
+    .about-section p { font-size: 16px; line-height: 1.7; color: var(--body); }
+
+    .step-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .step-card { padding: 20px; border-radius: var(--r-md); border: 1px solid var(--line-soft); background: var(--canvas); }
+    .step-num { width: 32px; height: 32px; border-radius: var(--r-full); background: var(--primary); color: #fff; display: grid; place-items: center; font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+    .step-icon { font-size: 28px; margin-bottom: 10px; }
+    .step-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: var(--ink); }
+    .step-card p { font-size: 14px; color: var(--muted); line-height: 1.5; }
+
+    .dim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .dim-item { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: var(--r-sm); border: 1px solid var(--line-soft); background: var(--canvas); }
+    .dim-icon { width: 36px; height: 36px; border-radius: var(--r-sm); display: grid; place-items: center; font-size: 18px; flex-shrink: 0; background: var(--surface); }
+    .dim-item h3 { font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+    .dim-item p { font-size: 13px; color: var(--muted); line-height: 1.4; }
+
+    .about-closing { text-align: center; padding-top: 56px; border-top: 1px solid var(--line-soft); margin-top: 8px; }
+    .closing-text { font-size: 30px; font-weight: 750; line-height: 1.4; color: var(--ink); margin-bottom: 32px; }
+    .closing-text .accent { color: var(--primary); }
+
+    .watermark { text-align: center; margin-top: 48px; font-size: 13px; letter-spacing: 2px; color: var(--muted-soft); opacity: 0.6; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">&#9671;</span><span>城市脉搏</span></div>
+    <div class="top-right">
+      <span class="top-meta">8 维度 · 3 Persona · 39 城</span>
+      <a class="theme-btn" href="https://wj.qq.com/s2/26866052/a2bc" target="_blank" rel="noopener" aria-label="反馈" title="反馈">&#9993;</a>
+      <button class="theme-btn" id="themeBtn" aria-label="切换主题">
+        <span class="icon-moon">&#9790;</span>
+        <span class="icon-sun">&#9728;</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="hero-glow"></div>
+      <!-- Far skyline — scrolls slowly -->
+      <div class="skyline-far" aria-hidden="true">
+        <div class="skyline-track">
+          <svg viewBox="0 80 1440 320" preserveAspectRatio="none" fill="currentColor"><path d="M0,400 L0,280 L40,280 L40,220 L55,220 L55,200 L70,200 L70,220 L90,220 L90,260 L120,260 L120,200 L130,200 L130,180 L140,160 L150,180 L150,200 L160,200 L160,260 L200,260 L200,230 L210,230 L210,180 L220,180 L220,160 L235,160 L235,180 L245,180 L245,230 L260,230 L260,250 L300,250 L300,200 L310,200 L310,140 L320,140 L320,120 L330,120 L330,140 L340,140 L340,200 L360,200 L360,230 L400,230 L400,190 L415,190 L415,150 L425,150 L425,130 L435,130 L435,110 L445,110 L445,130 L455,130 L455,150 L465,150 L465,190 L480,190 L480,240 L520,240 L520,210 L540,210 L540,170 L550,170 L550,150 L565,150 L565,170 L575,170 L575,210 L600,210 L600,250 L640,250 L640,220 L660,220 L660,180 L670,180 L670,160 L680,150 L690,160 L690,180 L700,180 L700,220 L730,220 L730,240 L780,240 L780,200 L790,200 L790,160 L800,160 L800,140 L815,140 L815,120 L825,120 L825,140 L835,140 L835,160 L845,160 L845,200 L860,200 L860,230 L900,230 L900,210 L920,210 L920,170 L935,170 L935,150 L945,150 L945,170 L955,170 L955,210 L980,210 L980,250 L1020,250 L1020,220 L1040,220 L1040,180 L1050,180 L1050,160 L1060,160 L1060,140 L1075,140 L1075,160 L1085,160 L1085,180 L1100,180 L1100,220 L1120,220 L1120,260 L1160,260 L1160,230 L1180,230 L1180,190 L1190,190 L1190,170 L1205,170 L1205,190 L1215,190 L1215,230 L1240,230 L1240,250 L1280,250 L1280,220 L1300,220 L1300,200 L1315,200 L1315,180 L1330,180 L1330,200 L1340,200 L1340,220 L1360,220 L1360,260 L1400,260 L1400,240 L1440,240 L1440,400 Z"/></svg>
+          <svg viewBox="0 80 1440 320" preserveAspectRatio="none" fill="currentColor"><path d="M0,400 L0,280 L40,280 L40,220 L55,220 L55,200 L70,200 L70,220 L90,220 L90,260 L120,260 L120,200 L130,200 L130,180 L140,160 L150,180 L150,200 L160,200 L160,260 L200,260 L200,230 L210,230 L210,180 L220,180 L220,160 L235,160 L235,180 L245,180 L245,230 L260,230 L260,250 L300,250 L300,200 L310,200 L310,140 L320,140 L320,120 L330,120 L330,140 L340,140 L340,200 L360,200 L360,230 L400,230 L400,190 L415,190 L415,150 L425,150 L425,130 L435,130 L435,110 L445,110 L445,130 L455,130 L455,150 L465,150 L465,190 L480,190 L480,240 L520,240 L520,210 L540,210 L540,170 L550,170 L550,150 L565,150 L565,170 L575,170 L575,210 L600,210 L600,250 L640,250 L640,220 L660,220 L660,180 L670,180 L670,160 L680,150 L690,160 L690,180 L700,180 L700,220 L730,220 L730,240 L780,240 L780,200 L790,200 L790,160 L800,160 L800,140 L815,140 L815,120 L825,120 L825,140 L835,140 L835,160 L845,160 L845,200 L860,200 L860,230 L900,230 L900,210 L920,210 L920,170 L935,170 L935,150 L945,150 L945,170 L955,170 L955,210 L980,210 L980,250 L1020,250 L1020,220 L1040,220 L1040,180 L1050,180 L1050,160 L1060,160 L1060,140 L1075,140 L1075,160 L1085,160 L1085,180 L1100,180 L1100,220 L1120,220 L1120,260 L1160,260 L1160,230 L1180,230 L1180,190 L1190,190 L1190,170 L1205,170 L1205,190 L1215,190 L1215,230 L1240,230 L1240,250 L1280,250 L1280,220 L1300,220 L1300,200 L1315,200 L1315,180 L1330,180 L1330,200 L1340,200 L1340,220 L1360,220 L1360,260 L1400,260 L1400,240 L1440,240 L1440,400 Z"/></svg>
+        </div>
+      </div>
+      <!-- Near skyline — scrolls faster -->
+      <div class="skyline-near" aria-hidden="true">
+        <div class="skyline-track">
+          <svg viewBox="0 80 1440 320" preserveAspectRatio="none" fill="currentColor"><path d="M0,400 L0,320 L30,320 L30,280 L50,280 L50,250 L60,250 L60,230 L75,230 L75,250 L85,250 L85,280 L100,280 L100,310 L140,310 L140,270 L150,270 L150,240 L160,240 L160,220 L175,220 L175,200 L185,200 L185,220 L195,220 L195,240 L205,240 L205,270 L220,270 L220,300 L260,300 L260,260 L280,260 L280,230 L290,230 L290,210 L305,210 L305,190 L315,190 L315,210 L325,210 L325,230 L340,230 L340,260 L370,260 L370,290 L410,290 L410,250 L425,250 L425,220 L435,220 L435,200 L450,200 L450,180 L460,180 L460,200 L470,200 L470,220 L485,220 L485,250 L500,250 L500,280 L540,280 L540,300 L580,300 L580,270 L600,270 L600,240 L610,240 L610,220 L625,220 L625,200 L635,200 L635,220 L645,220 L645,240 L660,240 L660,270 L690,270 L690,300 L730,300 L730,280 L750,280 L750,250 L760,250 L760,230 L775,230 L775,210 L785,210 L785,230 L795,230 L795,250 L810,250 L810,280 L840,280 L840,310 L880,310 L880,280 L900,280 L900,250 L915,250 L915,230 L925,230 L925,210 L940,210 L940,230 L950,230 L950,250 L965,250 L965,280 L990,280 L990,300 L1030,300 L1030,270 L1050,270 L1050,240 L1060,240 L1060,220 L1075,220 L1075,200 L1090,200 L1090,220 L1100,220 L1100,240 L1115,240 L1115,270 L1140,270 L1140,300 L1180,300 L1180,270 L1200,270 L1200,250 L1210,250 L1210,230 L1225,230 L1225,250 L1235,250 L1235,270 L1250,270 L1250,300 L1290,300 L1290,280 L1310,280 L1310,260 L1325,260 L1325,280 L1335,280 L1335,300 L1360,300 L1360,320 L1400,320 L1400,300 L1440,300 L1440,400 Z"/></svg>
+          <svg viewBox="0 80 1440 320" preserveAspectRatio="none" fill="currentColor"><path d="M0,400 L0,320 L30,320 L30,280 L50,280 L50,250 L60,250 L60,230 L75,230 L75,250 L85,250 L85,280 L100,280 L100,310 L140,310 L140,270 L150,270 L150,240 L160,240 L160,220 L175,220 L175,200 L185,200 L185,220 L195,220 L195,240 L205,240 L205,270 L220,270 L220,300 L260,300 L260,260 L280,260 L280,230 L290,230 L290,210 L305,210 L305,190 L315,190 L315,210 L325,210 L325,230 L340,230 L340,260 L370,260 L370,290 L410,290 L410,250 L425,250 L425,220 L435,220 L435,200 L450,200 L450,180 L460,180 L460,200 L470,200 L470,220 L485,220 L485,250 L500,250 L500,280 L540,280 L540,300 L580,300 L580,270 L600,270 L600,240 L610,240 L610,220 L625,220 L625,200 L635,200 L635,220 L645,220 L645,240 L660,240 L660,270 L690,270 L690,300 L730,300 L730,280 L750,280 L750,250 L760,250 L760,230 L775,230 L775,210 L785,210 L785,230 L795,230 L795,250 L810,250 L810,280 L840,280 L840,310 L880,310 L880,280 L900,280 L900,250 L915,250 L915,230 L925,230 L925,210 L940,210 L940,230 L950,230 L950,250 L965,250 L965,280 L990,280 L990,300 L1030,300 L1030,270 L1050,270 L1050,240 L1060,240 L1060,220 L1075,220 L1075,200 L1090,200 L1090,220 L1100,220 L1100,240 L1115,240 L1115,270 L1140,270 L1140,300 L1180,300 L1180,270 L1200,270 L1200,250 L1210,250 L1210,230 L1225,230 L1225,250 L1235,250 L1235,270 L1250,270 L1250,300 L1290,300 L1290,280 L1310,280 L1310,260 L1325,260 L1325,280 L1335,280 L1335,300 L1360,300 L1360,320 L1400,320 L1400,300 L1440,300 L1440,400 Z"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-content">
+      <h1>找到你的<span class="accent">理想城市</span></h1>
+      <p class="hero-lead">39 城、8 维度、个性化匹配 — 不是排名，是根据你的行业、身份和偏好生成的城市画像。</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="app.html">开始测评</a>
+        <a class="btn btn-ghost" href="#about">了解更多</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><div class="stat-num">39</div><div class="stat-label">城市覆盖</div></div>
+        <div class="stat"><div class="stat-num">8</div><div class="stat-label">评估维度</div></div>
+        <div class="stat"><div class="stat-num">51</div><div class="stat-label">数据指标</div></div>
+      </div>
+    </div>
+
+  </section>
+
+  <section class="about" id="about">
+    <div class="about-inner">
+      <div class="about-tagline">不是城市排名<br>是你的<span class="accent">城市匹配器</span></div>
+      <p class="about-sub">相同的城市，不同的你 — 我们根据你的行业、身份和偏好生成专属城市画像。</p>
+
+      <div class="about-section">
+        <h2>怎么用</h2>
+        <div class="step-grid">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <h3>选方向</h3>
+            <p>体制内还是市场化？互联网、金融、制造… 行业土壤因城而异。</p>
+          </div>
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <h3>选身份</h3>
+            <p>应届生、年轻家庭、自由职业者 — 同一座城，体验完全不同。</p>
+          </div>
+          <div class="step-card">
+            <div class="step-num">3</div>
+            <h3>选家乡</h3>
+            <p>你的家乡或意向省份，用来锚定地理偏好、匹配流动范围。</p>
+          </div>
+          <div class="step-card">
+            <div class="step-num">4</div>
+            <h3>回答气质题</h3>
+            <p>6 道选择题，测你对节奏、风险、社交的偏好，动态调整各维度权重。</p>
+          </div>
+          <div class="step-card">
+            <div class="step-num">5</div>
+            <h3>选流动范围</h3>
+            <p>愿意离开家乡多远？全国、省内、还是就近择城。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <h2>8 个评估维度</h2>
+        <div class="dim-grid">
+          <div class="dim-item">
+            <div class="dim-icon">&#9889;</div>
+            <div><h3>经济活力</h3><p>收入、GDP、高新企业密度、财政健康度</p></div>
+          </div>
+          <div class="dim-item">
+            <div class="dim-icon">&#127968;</div>
+            <div><h3>住房可负担</h3><p>房价收入比、租金、新房与二手房价格</p></div>
+          </div>
+          <div class="dim-item">
+            <div class="dim-icon">&#9749;</div>
+            <div><h3>生活便利</h3><p>咖啡馆、影院、购物中心、便利店密度</p></div>
+          </div>
+          <div class="dim-item">
+            <div class="dim-icon">&#127973;</div>
+            <div><h3>医疗健康</h3><p>三甲医院数量、千人床位数</p></div>
+          </div>
+          <div class="dim-item">
+            <div class="dim-icon">&#127891;</div>
+            <div><h3>教育资源</h3><p>高校、中小学规模与师生比，按身份加权</p></div>
+          </div>
+          <div class="dim-item">
+            <div class="dim-icon">&#127796;</div>
+            <div><h3>环境气候</h3><p>PM2.5、绿化覆盖、极端气温天数</p></div>
+          </div>
+          <div class="dim-item">
+            <div class="dim-icon">&#128652;</div>
+            <div><h3>交通通勤</h3><p>通勤时耗、轨交密度、高铁直达数、机场</p></div>
+          </div>
+          <div class="dim-item">
+            <div class="dim-icon">&#127963;</div>
+            <div><h3>治理基础</h3><p>财政自给率、行政层级、人均公共预算</p></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <h2>数据说明</h2>
+        <div class="step-grid">
+          <div class="step-card">
+            <div class="step-icon">&#127757;</div>
+            <h3>39 城 · 51 项指标</h3>
+            <p>覆盖 4 一线、21 新一线、14 二线，涵盖经济、住房、教育、医疗、环境、交通等 8 大维度。</p>
+          </div>
+          <div class="step-card">
+            <div class="step-icon">&#128218;</div>
+            <h3>公开数据</h3>
+            <p>来源为各城市统计年鉴、统计公报、住建部、教育部、卫健委等，数据年份 2022–2025。</p>
+          </div>
+          <div class="step-card">
+            <div class="step-icon">&#128200;</div>
+            <h3>相对排名，非绝对打分</h3>
+            <p>采用 percentile rank 归一化 — 展示的是 39 城之间的相对位置，你的气质和身份会动态调整权重。</p>
+          </div>
+          <div class="step-card">
+            <div class="step-icon">&#9888;</div>
+            <h3>仅供参考</h3>
+            <p>不构成任何定居、就业或投资决策建议。数据来自公开渠道，可能存在滞后或口径差异。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-closing">
+        <p class="closing-text">愿你找到那座<br><span class="accent">让你想留下来的城市</span></p>
+      </div>
+
+      <div class="watermark">hqzzdsda 出品</div>
+    </div>
+  </section>
+
+  <script>
+    var btn = document.getElementById('themeBtn');
+    btn.onclick = function() {
+      var current = document.documentElement.getAttribute('data-theme');
+      var next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('city-pulse-theme', next);
+    };
+  </script>
+</body>
+</html>
